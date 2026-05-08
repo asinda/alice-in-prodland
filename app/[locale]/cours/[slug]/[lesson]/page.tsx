@@ -1,27 +1,31 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCourseBySlug, getCourses } from '../../../../lib/db';
+import { setRequestLocale, getTranslations } from 'next-intl/server';
+import { getCourseBySlug, getCourses } from '../../../../../lib/db';
+import { routing } from '../../../../../i18n/routing';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import styles from '../../../../styles/Cours.module.css';
+import styles from '../../../../../styles/Cours.module.css';
 
 export async function generateStaticParams() {
-  const params: { slug: string; lesson: string }[] = [];
-  for (const course of getCourses({ status: 'published' })) {
-    for (const lesson of course.lessons) {
-      params.push({ slug: course.slug, lesson: lesson.slug });
+  const params: { locale: string; slug: string; lesson: string }[] = [];
+  for (const locale of routing.locales) {
+    for (const course of getCourses({ status: 'published' })) {
+      for (const lesson of course.lessons) {
+        params.push({ locale, slug: course.slug, lesson: lesson.slug });
+      }
     }
   }
   return params;
 }
 
 export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string; lesson: string }> }
+  { params }: { params: Promise<{ locale: string; slug: string; lesson: string }> }
 ): Promise<Metadata> {
   const { slug, lesson: lessonSlug } = await params;
   const course = getCourseBySlug(slug);
@@ -31,9 +35,12 @@ export async function generateMetadata(
 }
 
 export default async function LessonPage(
-  { params }: { params: Promise<{ slug: string; lesson: string }> }
+  { params }: { params: Promise<{ locale: string; slug: string; lesson: string }> }
 ) {
-  const { slug, lesson: lessonSlug } = await params;
+  const { locale, slug, lesson: lessonSlug } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'courses' });
+
   const course = getCourseBySlug(slug);
   if (!course || course.status !== 'published') notFound();
 
@@ -59,9 +66,9 @@ export default async function LessonPage(
   return (
     <>
       <div className={styles.lessonHeader}>
-        <Link href={`/cours/${slug}`} className={styles.backLink}>← {course.title}</Link>
+        <Link href={`/${locale}/cours/${slug}`} className={styles.backLink}>← {course.title}</Link>
         <span className={styles.lessonBreadcrumb}>
-          Leçon {lessonIndex + 1} / {sortedLessons.length}
+          {t('lessonOf')} {lessonIndex + 1} {t('of')} {sortedLessons.length}
         </span>
       </div>
 
@@ -75,17 +82,17 @@ export default async function LessonPage(
 
       <nav className={styles.lessonPager}>
         {prev ? (
-          <Link href={`/cours/${slug}/${prev.slug}`} className={styles.pagerLink}>
+          <Link href={`/${locale}/cours/${slug}/${prev.slug}`} className={styles.pagerLink}>
             ← {prev.title}
           </Link>
         ) : <span />}
         {next ? (
-          <Link href={`/cours/${slug}/${next.slug}`} className={styles.pagerLink}>
+          <Link href={`/${locale}/cours/${slug}/${next.slug}`} className={styles.pagerLink}>
             {next.title} →
           </Link>
         ) : (
-          <Link href={`/cours/${slug}`} className={styles.pagerLink}>
-            ✓ Fin du cours
+          <Link href={`/${locale}/cours/${slug}`} className={styles.pagerLink}>
+            {t('end')}
           </Link>
         )}
       </nav>

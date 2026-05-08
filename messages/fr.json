@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "description": "War stories depuis la production. Post-mortems, cheatsheets et retours d'expérience SRE/DevOps."
+  },
+  "nav": {
+    "blog": "blog",
+    "courses": "cours",
+    "about": "about",
+    "github": "github"
+  },
+  "home": {
+    "whoami": "alice — SRE / DevOps architect",
+    "mission1": "Survivre en production, apprendre de chaque incident,",
+    "mission2": "et documenter les rabbit holes pour les prochains.",
+    "topics": "kubernetes/  SRE/  CI-CD/  postmortems/  certifications/",
+    "featured": "Article récent",
+    "recent": "Articles récents",
+    "readMore": "Lire l'article →",
+    "viewAll": "Voir tous les articles →",
+    "readTime": "min de lecture"
+  },
+  "blog": {
+    "title": "blog",
+    "subtitle": "articles · Kubernetes, SRE, CI/CD, post-mortems",
+    "back": "← Retour au blog",
+    "backAll": "← Tous les articles",
+    "readTime": "min de lecture"
+  },
+  "courses": {
+    "title": "cours",
+    "subtitle": "Formations techniques DevOps / SRE / Platform Engineering",
+    "back": "← Tous les cours",
+    "lessons": "leçon",
+    "lessonsPlural": "leçons",
+    "start": "Commencer la première leçon →",
+    "lessonOf": "Leçon",
+    "of": "/",
+    "end": "✓ Fin du cours"
+  },
+  "footer": {
+    "built": "Built with",
+    "heart": "♥",
+    "and": "and too many",
+    "sessions": "kubectl debug sessions"
+  }
+}

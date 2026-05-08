@@ -1,12 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getAllPosts } from '../../lib/posts';
-import styles from '../../styles/Blog.module.css';
-
-export const metadata: Metadata = {
-  title: 'Blog — alice-in-prodland',
-  description: 'Articles sur Kubernetes, SRE, CI/CD et la vie en production.',
-};
+import { setRequestLocale, getTranslations } from 'next-intl/server';
+import { getAllPosts } from '../../../lib/posts';
+import styles from '../../../styles/Blog.module.css';
 
 const TAG_COLORS: Record<string, string> = {
   kubernetes: 'blue', 'github-actions': 'purple', SRE: 'green',
@@ -18,29 +14,38 @@ const TAG_COLORS: Record<string, string> = {
 
 function tagColor(tag: string) { return TAG_COLORS[tag] ?? 'default'; }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  });
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'blog' });
+  return { title: `${t('title')} — alice-in-prodland` };
 }
 
-export default function BlogIndex() {
+export default async function BlogIndex({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'blog' });
+
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-GB';
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
   const posts = getAllPosts();
 
   return (
     <>
       <div className={styles.header}>
         <h1 className={styles.title}>
-          <span className={styles.slash}>/</span>blog
+          <span className={styles.slash}>/</span>{t('title')}
         </h1>
         <p className={styles.subtitle}>
-          {posts.length} articles · Kubernetes, SRE, CI/CD, post-mortems
+          {posts.length} {t('subtitle')}
         </p>
       </div>
 
       <div className={styles.postList}>
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.slug}`} className={styles.postRow}>
+          <Link key={post.slug} href={`/${locale}/blog/${post.slug}`} className={styles.postRow}>
             <div className={styles.postLeft}>
               <span className={styles.postDate}>{formatDate(post.date)}</span>
             </div>
@@ -50,9 +55,7 @@ export default function BlogIndex() {
               <div className={styles.postFooter}>
                 <div className={styles.tagList}>
                   {post.tags.slice(0, 4).map(tag => (
-                    <span key={tag} className={styles.tag} data-color={tagColor(tag)}>
-                      {tag}
-                    </span>
+                    <span key={tag} className={styles.tag} data-color={tagColor(tag)}>{tag}</span>
                   ))}
                 </div>
                 <span className={styles.readTime}>{post.readTime} min</span>

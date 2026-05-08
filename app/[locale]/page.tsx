@@ -1,45 +1,34 @@
+import { setRequestLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { getAllPosts, PostMeta } from '../lib/posts';
-import styles from '../styles/Home.module.css';
+import { getAllPosts, PostMeta } from '../../lib/posts';
+import styles from '../../styles/Home.module.css';
 
 const TAG_COLORS: Record<string, string> = {
-  kubernetes: 'blue',
-  'github-actions': 'purple',
-  SRE: 'green',
-  CI_CD: 'purple',
-  devops: 'orange',
-  debugging: 'yellow',
-  OOM: 'red',
-  cheatsheet: 'blue',
-  postmortem: 'red',
-  incidents: 'red',
-  postgresql: 'orange',
-  CKA: 'green',
-  certification: 'green',
-  career: 'yellow',
-  kubectl: 'blue',
+  kubernetes: 'blue', 'github-actions': 'purple', SRE: 'green',
+  devops: 'orange', debugging: 'yellow', OOM: 'red',
+  cheatsheet: 'blue', postmortem: 'red', incidents: 'red',
+  postgresql: 'orange', CKA: 'green', certification: 'green',
+  career: 'yellow', kubectl: 'blue',
 };
 
-function tagColor(tag: string): string {
-  return TAG_COLORS[tag] ?? 'default';
-}
+function tagColor(tag: string) { return TAG_COLORS[tag] ?? 'default'; }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-}
+export default async function Home({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'home' });
 
-export default function Home() {
+  const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-GB';
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
   const posts = getAllPosts();
   const featured: PostMeta | undefined = posts[0];
   const recent = posts.slice(1, 4);
 
   return (
     <>
-      {/* Hero */}
       <section className={styles.hero}>
         <div className={styles.heroTerminal}>
           <div className={styles.terminalBar}>
@@ -53,24 +42,18 @@ export default function Home() {
               <span className={styles.prompt}>➜</span>{' '}
               <span className={styles.cmd}>whoami</span>
             </p>
-            <p className={styles.terminalOutput}>alice — SRE / DevOps engineer</p>
+            <p className={styles.terminalOutput}>{t('whoami')}</p>
             <p className={styles.terminalLine}>
               <span className={styles.prompt}>➜</span>{' '}
               <span className={styles.cmd}>cat mission.txt</span>
             </p>
-            <p className={styles.terminalOutput}>
-              Survivre en production, apprendre de chaque incident,
-            </p>
-            <p className={styles.terminalOutput}>
-              et documenter les rabbit holes pour les prochains.
-            </p>
+            <p className={styles.terminalOutput}>{t('mission1')}</p>
+            <p className={styles.terminalOutput}>{t('mission2')}</p>
             <p className={styles.terminalLine}>
               <span className={styles.prompt}>➜</span>{' '}
               <span className={styles.cmd}>ls topics/</span>
             </p>
-            <p className={styles.terminalOutput}>
-              kubernetes/&nbsp;&nbsp;SRE/&nbsp;&nbsp;CI-CD/&nbsp;&nbsp;postmortems/&nbsp;&nbsp;certifications/
-            </p>
+            <p className={styles.terminalOutput}>{t('topics')}</p>
             <p className={styles.terminalCursor}>
               <span className={styles.prompt}>➜</span>{' '}
               <span className={styles.blinkCursor}>▌</span>
@@ -79,40 +62,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured post */}
       {featured && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            <span className={styles.sectionIcon}>★</span> Article récent
+            <span className={styles.sectionIcon}>★</span> {t('featured')}
           </h2>
-          <Link href={`/blog/${featured.slug}`} className={styles.featuredCard}>
+          <Link href={`/${locale}/blog/${featured.slug}`} className={styles.featuredCard}>
             <div className={styles.featuredMeta}>
               <span className={styles.featuredDate}>{formatDate(featured.date)}</span>
-              <span className={styles.readTime}>{featured.readTime} min de lecture</span>
+              <span className={styles.readTime}>{featured.readTime} {t('readTime')}</span>
             </div>
             <h3 className={styles.featuredTitle}>{featured.title}</h3>
             <p className={styles.featuredExcerpt}>{featured.excerpt}</p>
             <div className={styles.tagList}>
               {featured.tags.map(tag => (
-                <span key={tag} className={styles.tag} data-color={tagColor(tag)}>
-                  {tag}
-                </span>
+                <span key={tag} className={styles.tag} data-color={tagColor(tag)}>{tag}</span>
               ))}
             </div>
-            <span className={styles.readMore}>Lire l'article →</span>
+            <span className={styles.readMore}>{t('readMore')}</span>
           </Link>
         </section>
       )}
 
-      {/* Recent posts */}
       {recent.length > 0 && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            <span className={styles.sectionIcon}>#</span> Articles récents
+            <span className={styles.sectionIcon}>#</span> {t('recent')}
           </h2>
           <div className={styles.postGrid}>
             {recent.map(post => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} className={styles.postCard}>
+              <Link key={post.slug} href={`/${locale}/blog/${post.slug}`} className={styles.postCard}>
                 <div className={styles.postMeta}>
                   <span className={styles.postDate}>{formatDate(post.date)}</span>
                   <span className={styles.readTime}>{post.readTime} min</span>
@@ -121,9 +100,7 @@ export default function Home() {
                 <p className={styles.postExcerpt}>{post.excerpt}</p>
                 <div className={styles.tagList}>
                   {post.tags.slice(0, 3).map(tag => (
-                    <span key={tag} className={styles.tag} data-color={tagColor(tag)}>
-                      {tag}
-                    </span>
+                    <span key={tag} className={styles.tag} data-color={tagColor(tag)}>{tag}</span>
                   ))}
                 </div>
               </Link>
@@ -133,9 +110,7 @@ export default function Home() {
       )}
 
       <div className={styles.viewAll}>
-        <Link href="/blog" className={styles.viewAllBtn}>
-          Voir tous les articles →
-        </Link>
+        <Link href={`/${locale}/blog`} className={styles.viewAllBtn}>{t('viewAll')}</Link>
       </div>
     </>
   );
