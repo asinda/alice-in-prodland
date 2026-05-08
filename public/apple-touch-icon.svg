@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <rect width="180" height="180" rx="36" fill="#0d1117"/>
+  <rect x="4" y="4" width="172" height="172" rx="33" fill="none" stroke="#58a6ff" stroke-width="3" opacity="0.35"/>
+  <!-- terminal dots -->
+  <circle cx="24" cy="28" r="5" fill="#f78166"/>
+  <circle cx="40" cy="28" r="5" fill="#e3b341"/>
+  <circle cx="56" cy="28" r="5" fill="#3fb950"/>
+  <!-- separator line -->
+  <line x1="14" y1="42" x2="166" y2="42" stroke="#58a6ff" stroke-width="0.8" opacity="0.2"/>
+  <!-- prompt -->
+  <text x="18" y="118" font-family="'JetBrains Mono',Consolas,monospace" font-size="72" font-weight="700" fill="#58a6ff">&#62;_</text>
+</svg>

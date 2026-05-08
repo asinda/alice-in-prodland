@@ -9,7 +9,13 @@ import styles from '../styles/Layout.module.css';
 export const metadata: Metadata = {
   title: 'alice-in-prodland',
   description: 'SRE & DevOps war stories from the production trenches.',
-  icons: { icon: '/favicon.ico' },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+    ],
+    apple: '/apple-touch-icon.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
