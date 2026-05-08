@@ -58,10 +58,7 @@ export default function AdminCours() {
                       </form>
                     )}
                     <form action={actionDeleteCourse.bind(null, course.id)} style={{ display: 'inline' }}>
-                      <button type="submit" className={styles.btnDanger}
-                        onClick={e => { if (!confirm('Supprimer ?')) e.preventDefault(); }}>
-                        ✕
-                      </button>
+                      <button type="submit" className={styles.btnDanger}>✕</button>
                     </form>
                   </div>
                 </td>
