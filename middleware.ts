@@ -11,21 +11,32 @@ const secret = () => new TextEncoder().encode(
 );
 
 export default async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  // Strip internal port from URL so next-intl redirects don't include :3000
+  // (Render reverse proxy forwards on port 3000 but external URL has no port)
+  const host = request.headers.get('host') ?? '';
+  let req = request;
+  if (host.includes(':3000') || host.includes(':10000')) {
+    const url = request.nextUrl.clone();
+    url.port = '';
+    url.protocol = 'https:';
+    req = new NextRequest(url, { headers: request.headers, method: request.method });
+  }
+
+  const { pathname } = req.nextUrl;
 
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/login') return NextResponse.next();
-    const token = request.cookies.get('admin-token')?.value;
-    if (!token) return NextResponse.redirect(new URL('/admin/login', request.url));
+    const token = req.cookies.get('admin-token')?.value;
+    if (!token) return NextResponse.redirect(new URL('/admin/login', req.url));
     try {
       await jwtVerify(token, secret());
       return NextResponse.next();
     } catch {
-      return NextResponse.redirect(new URL('/admin/login', request.url));
+      return NextResponse.redirect(new URL('/admin/login', req.url));
     }
   }
 
-  return intlMiddleware(request);
+  return intlMiddleware(req);
 }
 
 export const config = {
