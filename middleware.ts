@@ -10,17 +10,34 @@ const secret = () => new TextEncoder().encode(
   process.env.JWT_SECRET ?? 'fallback-dev-secret-change-in-prod'
 );
 
-function stripPort(url: string): string {
-  return url.replace(/^(https?:\/\/[^/:]+):\d+(.*)$/, '$1$2').replace(/^http:\/\//, 'https://');
+function cleanUrl(raw: string): string {
+  return raw
+    .replace(/^(https?:\/\/[^/:]+):\d+(.*)$/, '$1$2')
+    .replace(/^http:\/\//, 'https://');
 }
 
 export default async function middleware(request: NextRequest) {
+  // Render forwards requests internally on port 3000.
+  // Next.js picks up that port and includes it in redirect URLs.
+  // Strip it here so the browser never sees :3000.
+  const rawUrl = new URL(request.url);
+  if (rawUrl.port) {
+    rawUrl.port = '';
+    rawUrl.protocol = 'https:';
+    request = new NextRequest(rawUrl.toString(), {
+      headers: request.headers,
+      method: request.method,
+    });
+  }
+
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/login') return NextResponse.next();
     const token = request.cookies.get('admin-token')?.value;
-    if (!token) return NextResponse.redirect(new URL('/admin/login', request.url));
+    if (!token) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
     try {
       await jwtVerify(token, secret());
       return NextResponse.next();
@@ -31,11 +48,10 @@ export default async function middleware(request: NextRequest) {
 
   const response = intlMiddleware(request);
 
-  // Intercept redirects from next-intl and strip the internal port (:3000)
-  // that Render injects in the host header when proxying requests
-  if (response && response.status >= 300 && response.status < 400) {
+  // Belt-and-suspenders: also fix Location header if port slipped through
+  if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get('location') ?? '';
-    const clean = stripPort(location);
+    const clean = cleanUrl(location);
     if (clean !== location) {
       return NextResponse.redirect(clean, { status: response.status });
     }
