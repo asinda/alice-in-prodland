@@ -8,6 +8,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import { getPosts, getPostBySlug as getDbPostBySlug } from './db';
 
 const postsDir = path.join(process.cwd(), 'posts');
 
@@ -31,11 +32,10 @@ export interface Post extends PostMeta {
   toc: TocEntry[];
 }
 
-// Module-level memo — unified runs once per server process, not per request
-let _allPosts: PostMeta[] | null = null;
-const _postCache = new Map<string, Post>();
+// Filesystem posts cached once per process (files don't change without redeploy)
+let _fsPosts: PostMeta[] | null = null;
+const _fsPostCache = new Map<string, Post>();
 
-// Shared processor instance (expensive to create)
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
@@ -54,17 +54,12 @@ function extractToc(html: string): TocEntry[] {
   }));
 }
 
-export function getAllPosts(): PostMeta[] {
-  if (_allPosts) return _allPosts;
-
-  if (!fs.existsSync(postsDir)) {
-    _allPosts = [];
-    return _allPosts;
-  }
+function readFsPosts(): PostMeta[] {
+  if (_fsPosts) return _fsPosts;
+  if (!fs.existsSync(postsDir)) { _fsPosts = []; return _fsPosts; }
 
   const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'));
-
-  _allPosts = files
+  _fsPosts = files
     .map(filename => {
       const slug = filename.replace(/\.md$/, '');
       const raw = fs.readFileSync(path.join(postsDir, filename), 'utf8');
@@ -81,11 +76,52 @@ export function getAllPosts(): PostMeta[] {
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1));
 
-  return _allPosts;
+  return _fsPosts;
+}
+
+// DB posts are always read fresh so new admin posts appear immediately
+function readDbPosts(): PostMeta[] {
+  return getPosts({ status: 'published' }).map(p => ({
+    slug: p.slug,
+    title: p.title,
+    date: p.publishedAt ?? p.createdAt,
+    excerpt: p.excerpt,
+    tags: p.tags,
+    readTime: Math.max(1, Math.round(p.content.trim().split(/\s+/).length / 200)),
+  }));
+}
+
+export function getAllPosts(): PostMeta[] {
+  const fsPosts = readFsPosts();
+  const dbPosts = readDbPosts();
+  const dbSlugs = new Set(dbPosts.map(p => p.slug));
+  return [
+    ...dbPosts,
+    ...fsPosts.filter(p => !dbSlugs.has(p.slug)),
+  ].sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 export async function getPost(slug: string): Promise<Post> {
-  const cached = _postCache.get(slug);
+  // DB takes precedence — always fresh, no cache
+  const dbPost = getDbPostBySlug(slug);
+  if (dbPost && dbPost.status === 'published') {
+    const result = await processor.process(dbPost.content);
+    const contentHtml = result.toString();
+    const wordCount = dbPost.content.trim().split(/\s+/).length;
+    return {
+      slug: dbPost.slug,
+      title: dbPost.title,
+      date: dbPost.publishedAt ?? dbPost.createdAt,
+      excerpt: dbPost.excerpt,
+      tags: dbPost.tags,
+      readTime: Math.max(1, Math.round(wordCount / 200)),
+      contentHtml,
+      toc: extractToc(contentHtml),
+    };
+  }
+
+  // Fallback: filesystem post (cached)
+  const cached = _fsPostCache.get(slug);
   if (cached) return cached;
 
   const raw = fs.readFileSync(path.join(postsDir, `${slug}.md`), 'utf8');
@@ -105,6 +141,6 @@ export async function getPost(slug: string): Promise<Post> {
     toc: extractToc(contentHtml),
   };
 
-  _postCache.set(slug, post);
+  _fsPostCache.set(slug, post);
   return post;
 }
