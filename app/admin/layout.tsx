@@ -12,6 +12,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         <nav className={styles.sidebarNav}>
+          <span className={styles.navSection}>overview</span>
+          <Link href="/admin" className={styles.navLink}>
+            <span className={styles.navIcon}>~</span> Dashboard
+          </Link>
+
           <span className={styles.navSection}>contenu</span>
           <Link href="/admin/posts" className={styles.navLink}>
             <span className={styles.navIcon}>✦</span> Posts & Tutoriels

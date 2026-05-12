@@ -1,12 +1,13 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useTransition } from 'react';
 import Link from 'next/link';
 import type { DbPost, IntegrationStatus } from '../../../../lib/db';
 import {
   actionUpdatePost, actionPublishPost, actionUnpublishPost,
   actionDeletePost, actionRepushPostIntegrations,
 } from '../../../../lib/actions/posts';
+import { actionRenderMarkdown } from '../../../../lib/actions/markdown';
 import styles from '../../../../styles/Admin.module.css';
 
 function IntegBadge({ status }: { status: IntegrationStatus }) {
@@ -22,6 +23,18 @@ function IntegBadge({ status }: { status: IntegrationStatus }) {
 export default function EditPostClient({ post }: { post: DbPost }) {
   const [state, action, pending] = useActionState(actionUpdatePost, null);
   const [copied, setCopied] = useState(false);
+  const [content, setContent] = useState(post.content);
+  const [tab, setTab] = useState<'edit' | 'preview'>('edit');
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [isPreviewing, startPreview] = useTransition();
+
+  function switchToPreview() {
+    setTab('preview');
+    startPreview(async () => {
+      const html = await actionRenderMarkdown(content);
+      setPreviewHtml(html);
+    });
+  }
 
   function copyCaption(text: string) {
     navigator.clipboard.writeText(text).then(() => {
@@ -36,6 +49,9 @@ export default function EditPostClient({ post }: { post: DbPost }) {
         <h1 className={styles.pageTitle}><span>✦</span> {post.title}</h1>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <Link href="/admin/posts" className={styles.btnSecondary}>← Retour</Link>
+          <Link href={`/admin/posts/${post.id}/preview`} className={styles.btnSecondary} target="_blank">
+            Aperçu ↗
+          </Link>
           {post.status === 'published' && (
             <Link href={`/blog/${post.slug}`} className={styles.btnSecondary} target="_blank">
               Voir ↗
@@ -93,8 +109,45 @@ export default function EditPostClient({ post }: { post: DbPost }) {
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>contenu (markdown)</label>
-          <textarea name="content" defaultValue={post.content} className={styles.formTextarea} />
+          <div className={styles.previewTabBar}>
+            <label className={styles.formLabel}>contenu (markdown)</label>
+            <div className={styles.previewTabs}>
+              <button
+                type="button"
+                className={`${styles.previewTab} ${tab === 'edit' ? styles.previewTabActive : ''}`}
+                onClick={() => setTab('edit')}
+              >
+                Éditer
+              </button>
+              <button
+                type="button"
+                className={`${styles.previewTab} ${tab === 'preview' ? styles.previewTabActive : ''}`}
+                onClick={switchToPreview}
+              >
+                Aperçu
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            name="content"
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            className={styles.formTextarea}
+            style={tab === 'preview' ? { display: 'none' } : {}}
+          />
+
+          {tab === 'preview' && (
+            <div className={styles.previewPane}>
+              {isPreviewing ? (
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  Rendu en cours…
+                </p>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              )}
+            </div>
+          )}
         </div>
 
         {state?.error && <p className={styles.formError}>{state.error}</p>}

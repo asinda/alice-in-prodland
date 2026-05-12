@@ -8,7 +8,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
-import { getPosts, getPostBySlug as getDbPostBySlug } from './db';
+import { getPosts, getPostBySlug as getDbPostBySlug, type ContentType, type Status, type Integrations } from './db';
 
 const postsDir = path.join(process.cwd(), 'posts');
 
@@ -99,6 +99,70 @@ export function getAllPosts(): PostMeta[] {
     ...dbPosts,
     ...fsPosts.filter(p => !dbSlugs.has(p.slug)),
   ].sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+// ─── Admin unified view ──────────────────────────────────────────────────────
+
+export interface AdminPostRow {
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  tags: string[];
+  source: 'db' | 'fs';
+  // présents uniquement si source === 'db'
+  id?: string;
+  type?: ContentType;
+  status?: Status;
+  integrations?: Integrations;
+  createdAt?: string;
+}
+
+export function getFsPostRaw(slug: string): { title: string; excerpt: string; content: string; tags: string[]; date: string } | null {
+  const filePath = path.join(postsDir, `${slug}.md`);
+  if (!fs.existsSync(filePath)) return null;
+  const raw = fs.readFileSync(filePath, 'utf8');
+  const { data, content } = matter(raw);
+  return {
+    title: (data.title as string) ?? slug,
+    excerpt: (data.excerpt as string) ?? '',
+    content,
+    tags: (data.tags as string[]) ?? [],
+    date: (data.date as string) ?? new Date().toISOString(),
+  };
+}
+
+export function getAllAdminPosts(): AdminPostRow[] {
+  const dbPosts = getPosts();
+  const fsPosts = readFsPosts();
+  const dbSlugs = new Set(dbPosts.map(p => p.slug));
+
+  const dbRows: AdminPostRow[] = dbPosts.map(p => ({
+    slug: p.slug,
+    title: p.title,
+    date: p.createdAt,
+    excerpt: p.excerpt,
+    tags: p.tags,
+    source: 'db' as const,
+    id: p.id,
+    type: p.type,
+    status: p.status,
+    integrations: p.integrations,
+    createdAt: p.createdAt,
+  }));
+
+  const fsRows: AdminPostRow[] = fsPosts
+    .filter(p => !dbSlugs.has(p.slug))
+    .map(p => ({
+      slug: p.slug,
+      title: p.title,
+      date: p.date,
+      excerpt: p.excerpt,
+      tags: p.tags,
+      source: 'fs' as const,
+    }));
+
+  return [...dbRows, ...fsRows].sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 export async function getPost(slug: string): Promise<Post> {
