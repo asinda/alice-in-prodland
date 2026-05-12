@@ -1,13 +1,26 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useState, useTransition } from 'react';
 import Link from 'next/link';
 import type { DbLesson } from '../../../../../../lib/db';
 import { actionUpdateLesson, actionDeleteLesson } from '../../../../../../lib/actions/courses';
+import { actionRenderMarkdown } from '../../../../../../lib/actions/markdown';
 import styles from '../../../../../../styles/Admin.module.css';
 
 export default function EditLessonClient({ courseId, lesson }: { courseId: string; lesson: DbLesson }) {
   const [state, action, pending] = useActionState(actionUpdateLesson, null);
+  const [content, setContent] = useState(lesson.content);
+  const [tab, setTab] = useState<'edit' | 'preview'>('edit');
+  const [previewHtml, setPreviewHtml] = useState('');
+  const [isPreviewing, startPreview] = useTransition();
+
+  function switchToPreview() {
+    setTab('preview');
+    startPreview(async () => {
+      const html = await actionRenderMarkdown(content);
+      setPreviewHtml(html);
+    });
+  }
 
   return (
     <>
@@ -41,8 +54,45 @@ export default function EditLessonClient({ courseId, lesson }: { courseId: strin
         </div>
 
         <div className={styles.formGroup}>
-          <label className={styles.formLabel}>contenu (markdown)</label>
-          <textarea name="content" defaultValue={lesson.content} className={styles.formTextarea} />
+          <div className={styles.previewTabBar}>
+            <label className={styles.formLabel}>contenu (markdown)</label>
+            <div className={styles.previewTabs}>
+              <button
+                type="button"
+                className={`${styles.previewTab} ${tab === 'edit' ? styles.previewTabActive : ''}`}
+                onClick={() => setTab('edit')}
+              >
+                Éditer
+              </button>
+              <button
+                type="button"
+                className={`${styles.previewTab} ${tab === 'preview' ? styles.previewTabActive : ''}`}
+                onClick={switchToPreview}
+              >
+                Aperçu
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            name="content"
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            className={styles.formTextarea}
+            style={tab === 'preview' ? { display: 'none' } : {}}
+          />
+
+          {tab === 'preview' && (
+            <div className={styles.previewPane}>
+              {isPreviewing ? (
+                <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  Rendu en cours…
+                </p>
+              ) : (
+                <div dangerouslySetInnerHTML={{ __html: previewHtml }} />
+              )}
+            </div>
+          )}
         </div>
 
         {state?.error && <p className={styles.formError}>{state.error}</p>}

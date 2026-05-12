@@ -1,14 +1,31 @@
 import Link from 'next/link';
 import { getCourses } from '../../../lib/db';
+import type { Status } from '../../../lib/db';
 import { actionPublishCourse, actionDeleteCourse } from '../../../lib/actions/courses';
+import AdminFilterBar from '../../../components/AdminFilterBar';
 import styles from '../../../styles/Admin.module.css';
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-export default function AdminCours() {
-  const courses = getCourses();
+export default async function AdminCours({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; status?: string }>;
+}) {
+  const { q = '', status = '' } = await searchParams;
+
+  let courses = getCourses();
+  if (status) courses = courses.filter(c => c.status === (status as Status));
+  if (q) {
+    const lq = q.toLowerCase();
+    courses = courses.filter(c =>
+      c.title.toLowerCase().includes(lq) ||
+      c.tags.some(t => t.toLowerCase().includes(lq)) ||
+      c.description.toLowerCase().includes(lq)
+    );
+  }
 
   return (
     <>
@@ -17,8 +34,12 @@ export default function AdminCours() {
         <Link href="/admin/cours/new" className={styles.btnPrimary}>+ Nouveau cours</Link>
       </div>
 
+      <AdminFilterBar q={q} status={status} />
+
       {courses.length === 0 ? (
-        <p className={styles.empty}>Aucun cours. Crée ton premier cours.</p>
+        <p className={styles.empty}>
+          {q || status ? 'Aucun résultat pour ces filtres.' : 'Aucun cours. Crée ton premier cours.'}
+        </p>
       ) : (
         <table className={styles.table}>
           <thead>
