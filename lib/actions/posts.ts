@@ -3,9 +3,10 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import {
-  createPost, updatePost, deletePost, publishPost, unpublishPost, getPostById,
+  createPost, updatePost, deletePost, publishPost, unpublishPost, getPostById, getPostBySlug,
   type ContentType,
 } from '../db';
+import { getFsPostRaw } from '../posts';
 import { postToLinkedIn } from '../integrations/linkedin';
 import { prepareTikTokPost } from '../integrations/tiktok';
 
@@ -101,4 +102,29 @@ export async function actionDeletePost(id: string) {
   deletePost(id);
   revalidatePath('/admin/posts');
   redirect('/admin/posts');
+}
+
+export async function actionImportFsPost(slug: string) {
+  const existing = getPostBySlug(slug);
+  if (existing) {
+    redirect(`/admin/posts/${existing.id}`);
+    return;
+  }
+
+  const raw = getFsPostRaw(slug);
+  if (!raw) throw new Error(`Fichier posts/${slug}.md introuvable`);
+
+  const post = createPost({
+    slug,
+    title: raw.title,
+    excerpt: raw.excerpt,
+    content: raw.content,
+    tags: raw.tags,
+    type: 'post',
+    status: 'published',
+    publishedAt: raw.date,
+  });
+
+  revalidatePath('/admin/posts');
+  redirect(`/admin/posts/${post.id}`);
 }
