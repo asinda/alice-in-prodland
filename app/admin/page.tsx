@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { getPosts, getCourses } from '../../lib/db';
+import { getAllAdminPosts } from '../../lib/posts';
+import { getCourses } from '../../lib/db';
 import styles from '../../styles/Admin.module.css';
 
 function formatDate(iso: string) {
@@ -7,11 +8,11 @@ function formatDate(iso: string) {
 }
 
 export default function AdminDashboard() {
-  const posts = getPosts();
+  const posts = getAllAdminPosts();
   const courses = getCourses();
 
-  const publishedPosts = posts.filter(p => p.status === 'published').length;
-  const draftPosts = posts.filter(p => p.status === 'draft').length;
+  const publishedPosts = posts.filter(p => p.source === 'db' ? p.status === 'published' : true).length;
+  const draftPosts = posts.filter(p => p.source === 'db' && p.status === 'draft').length;
   const publishedCourses = courses.filter(c => c.status === 'published').length;
 
   return (
@@ -60,19 +61,26 @@ export default function AdminDashboard() {
             </thead>
             <tbody>
               {posts.slice(0, 6).map(post => (
-                <tr key={post.id}>
+                <tr key={post.source === 'db' ? post.id : `fs-${post.slug}`}>
                   <td>
-                    <Link href={`/admin/posts/${post.id}`} style={{ color: 'var(--text-heading)' }}>
-                      {post.title}
-                    </Link>
+                    {post.source === 'db' ? (
+                      <Link href={`/admin/posts/${post.id}`} style={{ color: 'var(--text-heading)' }}>
+                        {post.title}
+                      </Link>
+                    ) : (
+                      <span style={{ color: 'var(--text-heading)' }}>
+                        {post.title}{' '}
+                        <span className={`${styles.badge} ${styles.badgeFs}`}>.md</span>
+                      </span>
+                    )}
                   </td>
                   <td>
-                    <span className={`${styles.badge} ${post.status === 'published' ? styles.badgePublished : styles.badgeDraft}`}>
-                      {post.status}
+                    <span className={`${styles.badge} ${post.source === 'fs' || post.status === 'published' ? styles.badgePublished : styles.badgeDraft}`}>
+                      {post.source === 'fs' ? 'published' : post.status}
                     </span>
                   </td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    {formatDate(post.createdAt)}
+                    {formatDate(post.date)}
                   </td>
                 </tr>
               ))}
