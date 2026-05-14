@@ -55,8 +55,8 @@ function extractToc(html: string): TocEntry[] {
 }
 
 function readFsPosts(): PostMeta[] {
-  if (_fsPosts) return _fsPosts;
-  if (!fs.existsSync(postsDir)) { _fsPosts = []; return _fsPosts; }
+  if (_fsPosts !== null) return _fsPosts;
+  if (!fs.existsSync(postsDir)) return [];
 
   const files = fs.readdirSync(postsDir).filter(f => f.endsWith('.md'));
   _fsPosts = files
