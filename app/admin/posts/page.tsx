@@ -28,7 +28,10 @@ export default async function AdminPosts({
     });
   }
   if (type) {
-    posts = posts.filter(p => p.source === 'db' && p.type === (type as ContentType));
+    posts = posts.filter(p => {
+      if (p.source === 'fs') return type === 'post';
+      return p.type === (type as ContentType);
+    });
   }
   if (q) {
     const lq = q.toLowerCase();
