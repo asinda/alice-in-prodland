@@ -40,7 +40,7 @@ export default function AdminFilterBar({ q, status, typeFilter = '', showType = 
         className={styles.filterSearch}
       />
       <select
-        defaultValue={status}
+        value={status}
         onChange={e => update({ status: e.target.value })}
         className={styles.filterSelect}
       >
@@ -50,7 +50,7 @@ export default function AdminFilterBar({ q, status, typeFilter = '', showType = 
       </select>
       {showType && (
         <select
-          defaultValue={typeFilter}
+          value={typeFilter}
           onChange={e => update({ type: e.target.value })}
           className={styles.filterSelect}
         >
