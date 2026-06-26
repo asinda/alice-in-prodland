@@ -1,6 +1,6 @@
 // app/api/schedule/publish/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { timingSafeEqual } from 'crypto'
+import { timingSafeEqual } from 'node:crypto'
 import { getNextPending, markPublished, markFailed } from '@/lib/schedule'
 import { setContentStatus } from '@/lib/content-status'
 import { getPostBySlug, publishPost, createPost } from '@/lib/db'
