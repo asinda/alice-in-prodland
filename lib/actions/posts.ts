@@ -7,27 +7,10 @@ import {
   type ContentType,
 } from '../db';
 import { getFsPostRaw } from '../posts';
-import { postToLinkedIn } from '../integrations/linkedin';
-import { prepareTikTokPost } from '../integrations/tiktok';
+import { generateAndDistribute } from '../agents/distribute';
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-async function pushIntegrations(post: NonNullable<ReturnType<typeof getPostById>>) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-  const payload = {
-    title: post.title,
-    excerpt: post.excerpt,
-    url: `${siteUrl}/blog/${post.slug}`,
-    tags: post.tags,
-    type: post.type,
-  };
-  const [linkedin, tiktok] = await Promise.all([
-    postToLinkedIn(payload),
-    prepareTikTokPost(payload),
-  ]);
-  updatePost(post.id, { integrations: { ...post.integrations, linkedin, tiktok } });
 }
 
 export async function actionCreatePost(_: unknown, formData: FormData) {
@@ -40,16 +23,7 @@ export async function actionCreatePost(_: unknown, formData: FormData) {
 
   if (!title) return { error: 'Le titre est requis.' };
 
-  const post = createPost({
-    slug: slugify(title),
-    title,
-    excerpt,
-    content,
-    type,
-    tags,
-    status: 'draft',
-    publishedAt: null,
-  });
+  const post = createPost({ slug: slugify(title), title, excerpt, content, type, tags, status: 'draft', publishedAt: null });
 
   revalidatePath('/admin/posts');
   redirect(`/admin/posts/${post.id}`);
@@ -65,7 +39,6 @@ export async function actionUpdatePost(_: unknown, formData: FormData) {
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
 
   if (!title) return { error: 'Le titre est requis.' };
-
   updatePost(id, { title, excerpt, content, type, tags });
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
@@ -76,7 +49,8 @@ export async function actionPublishPost(id: string) {
   const post = getPostById(id);
   if (!post) return;
   publishPost(id);
-  await pushIntegrations(post);
+  const published = getPostById(id)!;
+  await generateAndDistribute(published);
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
   revalidatePath('/blog');
@@ -86,7 +60,7 @@ export async function actionPublishPost(id: string) {
 export async function actionRepushPostIntegrations(id: string) {
   const post = getPostById(id);
   if (!post || post.status !== 'published') return;
-  await pushIntegrations(post);
+  await generateAndDistribute(post);
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
 }
@@ -106,24 +80,12 @@ export async function actionDeletePost(id: string) {
 
 export async function actionImportFsPost(slug: string) {
   const existing = getPostBySlug(slug);
-  if (existing) {
-    redirect(`/admin/posts/${existing.id}`);
-    return;
-  }
+  if (existing) { redirect(`/admin/posts/${existing.id}`); return; }
 
   const raw = getFsPostRaw(slug);
   if (!raw) throw new Error(`Fichier posts/${slug}.md introuvable`);
 
-  const post = createPost({
-    slug,
-    title: raw.title,
-    excerpt: raw.excerpt,
-    content: raw.content,
-    tags: raw.tags,
-    type: 'post',
-    status: 'published',
-    publishedAt: raw.date,
-  });
+  const post = createPost({ slug, title: raw.title, excerpt: raw.excerpt, content: raw.content, tags: raw.tags, type: 'post', status: 'published', publishedAt: raw.date });
 
   revalidatePath('/admin/posts');
   redirect(`/admin/posts/${post.id}`);
