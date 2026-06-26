@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { getContentStatus, setContentStatus } from '../content-status'
 import { improvePost } from '../agents/improve'
-import { getPost } from '../posts'
+import { getFsPostRaw } from '../posts'
 import { getPostBySlug, updatePost } from '../db'
 import type { ImproveOutput } from '../agents/improve'
 
@@ -13,15 +13,16 @@ export async function actionMarkReady(slug: string): Promise<void> {
 }
 
 export async function actionImproveWithAI(slug: string): Promise<ImproveOutput> {
-  const post = await getPost(slug)
+  // Use getPostBySlug for DB posts (works for drafts), getFsPostRaw for FS-only posts
   const dbPost = getPostBySlug(slug)
-  const result = await improvePost({
-    slug,
-    title: post.title,
-    excerpt: post.excerpt,
-    content: dbPost?.content ?? post.contentHtml,
-    tags: post.tags,
-  })
+  const fsPost = !dbPost ? getFsPostRaw(slug) : null
+
+  const title = dbPost?.title ?? fsPost?.title ?? slug
+  const excerpt = dbPost?.excerpt ?? fsPost?.excerpt ?? ''
+  const content = dbPost?.content ?? fsPost?.content ?? ''
+  const tags = dbPost?.tags ?? fsPost?.tags ?? []
+
+  const result = await improvePost({ slug, title, excerpt, content, tags })
   setContentStatus(slug, {
     aiImprovedTitle: result.improvedTitle,
     aiImprovedExcerpt: result.improvedExcerpt,

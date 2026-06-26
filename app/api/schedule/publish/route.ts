@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ status: 'published', slug: entry.slug })
   } catch (e) {
     markFailed(entry.id, String(e))
-    return NextResponse.json({ status: 'error', error: String(e) }, { status: 500 })
+    console.error('[publish-webhook] Failed:', e)
+    return NextResponse.json({ status: 'error', error: 'Internal publish error' }, { status: 500 })
   }
 }

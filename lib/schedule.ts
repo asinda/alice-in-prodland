@@ -19,11 +19,17 @@ function cuid(): string {
 
 function readAll(): ScheduleEntry[] {
   if (!fs.existsSync(dataFile)) return []
-  return JSON.parse(fs.readFileSync(dataFile, 'utf8'))
+  try {
+    return JSON.parse(fs.readFileSync(dataFile, 'utf8'))
+  } catch {
+    return []
+  }
 }
 
 function writeAll(data: ScheduleEntry[]): void {
-  fs.writeFileSync(dataFile, JSON.stringify(data, null, 2))
+  const tmp = dataFile + '.tmp'
+  fs.writeFileSync(tmp, JSON.stringify(data, null, 2))
+  fs.renameSync(tmp, dataFile)
 }
 
 export function getSchedule(): ScheduleEntry[] {
