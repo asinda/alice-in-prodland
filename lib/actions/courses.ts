@@ -28,7 +28,7 @@ async function pushIntegrations(course: NonNullable<ReturnType<typeof getCourseB
     linkGumroad(course.gumroadUrl),
     prepareTikTokPost(payload),
   ]);
-  updateCourse(course.id, { integrations: { linkedin, gumroad, tiktok } });
+  updateCourse(course.id, { integrations: { linkedin, gumroad, tiktok, instagram: { status: 'idle' }, youtube: { status: 'idle' } } });
 }
 
 export async function actionCreateCourse(_: unknown, formData: FormData) {
