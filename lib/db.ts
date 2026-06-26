@@ -21,12 +21,16 @@ export interface Integrations {
   linkedin: IntegrationResult;
   gumroad: IntegrationResult;
   tiktok: IntegrationResult;
+  instagram: IntegrationResult;
+  youtube: IntegrationResult;
 }
 
 const defaultIntegrations = (): Integrations => ({
   linkedin: { status: 'idle' },
   gumroad: { status: 'idle' },
   tiktok: { status: 'idle' },
+  instagram: { status: 'idle' },
+  youtube: { status: 'idle' },
 });
 
 export interface DbPost {
