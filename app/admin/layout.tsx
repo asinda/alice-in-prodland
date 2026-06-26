@@ -28,6 +28,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className={styles.navIcon}>◎</span> Obsidian Vault
           </Link>
 
+          <span className={styles.navSection}>publication</span>
+          <Link href="/admin/review" className={styles.navLink}>
+            <span className={styles.navIcon}>⟳</span> Révision
+          </Link>
+          <Link href="/admin/schedule" className={styles.navLink}>
+            <span className={styles.navIcon}>◷</span> Calendrier
+          </Link>
+
           <span className={styles.navSection}>site</span>
           <Link href="/" className={styles.navLink} target="_blank">
             <span className={styles.navIcon}>↗</span> Voir le site

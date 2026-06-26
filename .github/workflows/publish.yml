@@ -1,0 +1,17 @@
+# .github/workflows/publish.yml
+name: Scheduled Publish
+
+on:
+  schedule:
+    - cron: '0 7 * * 1,3,5'   # lun/mer/ven 9h Paris (UTC+2 en été, UTC+1 en hiver)
+  workflow_dispatch:            # permet de déclencher manuellement depuis GitHub
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger publish webhook
+        run: |
+          curl -f -X POST "${{ secrets.SITE_URL }}/api/schedule/publish" \
+            -H "Authorization: Bearer ${{ secrets.PUBLISH_SECRET }}" \
+            -H "Content-Type: application/json"
