@@ -1,21 +1,21 @@
 ---
-title: "Architecture d'un SaaS IA en 2026 : Next.js + Supabase + Clerk + OpenAI — les vraies décisions"
+title: "Architecture d'un SaaS IA en 2026 : Next.js + Supabase + Clerk + OpenAI   les vraies décisions"
 date: "2026-05-07"
-excerpt: "J'ai conçu deux SaaS IA cette année — LegalPulse (conformité légale automatisée) et JobTaillor (adaptation de CV par IA). Voici l'architecture que j'aurais voulu trouver avant de commencer : les vraies décisions, les vraies limites, les vrais coûts."
+excerpt: "J'ai conçu deux SaaS IA cette année   LegalPulse (conformité légale automatisée) et JobTaillor (adaptation de CV par IA). Voici l'architecture que j'aurais voulu trouver avant de commencer : les vraies décisions, les vraies limites, les vrais coûts."
 tags: ["SaaS", "architecture", "nextjs", "supabase", "devops", "AI"]
 ---
 
-On voit beaucoup de "stack for SaaS" qui ressemblent à des listes de logos. Ce que je vais partager ici, c'est l'architecture que j'ai réellement utilisée sur deux projets — avec les décisions non-évidentes, les limites réelles, et ce que je ferais différemment.
+On voit beaucoup de "stack for SaaS" qui ressemblent à des listes de logos. Ce que je vais partager ici, c'est l'architecture que j'ai réellement utilisée sur deux projets   avec les décisions non-évidentes, les limites réelles, et ce que je ferais différemment.
 
-## Le contexte — deux projets, une stack commune
+## Le contexte   deux projets, une stack commune
 
-**LegalPulse AI** : génération automatique de CGU, mentions légales, politique de confidentialité — mis à jour automatiquement selon la législation. Cible : freelances et solopreneurs.
+**LegalPulse AI** : génération automatique de CGU, mentions légales, politique de confidentialité   mis à jour automatiquement selon la législation. Cible : freelances et solopreneurs.
 
 **JobTaillor** : adaptation intelligente de CV à une offre d'emploi spécifique. L'utilisateur colle une URL de job LinkedIn/Indeed, son profil, et l'IA génère un CV optimisé.
 
 Les deux partagent la même stack. Ce n'est pas un accident.
 
-## La stack — et pourquoi ces choix
+## La stack   et pourquoi ces choix
 
 ```
 Frontend + Backend : Next.js 15 App Router (Server Actions)
@@ -29,7 +29,7 @@ Déploiement        : Vercel
 
 ### Next.js App Router + Server Actions : un seul repo, pas de séparation frontend/backend
 
-La décision la plus structurante. Avec les Server Actions, je n'écris pas d'API REST séparée — les actions côté serveur sont dans le même fichier que les composants React. Pour un seul dev ou une petite équipe, c'est un gain énorme de complexité.
+La décision la plus structurante. Avec les Server Actions, je n'écris pas d'API REST séparée   les actions côté serveur sont dans le même fichier que les composants React. Pour un seul dev ou une petite équipe, c'est un gain énorme de complexité.
 
 ```typescript
 // app/cv/generate/actions.ts
@@ -56,7 +56,7 @@ export async function generateCV(jobUrl: string, userProfile: UserProfile) {
 }
 ```
 
-### Supabase — RLS dès le départ, pas après
+### Supabase   RLS dès le départ, pas après
 
 La fonctionnalité critique de Supabase n'est pas PostgreSQL (n'importe qui peut vous donner du Postgres). C'est le **Row Level Security intégré** : chaque utilisateur ne peut voir que ses propres données, et ça se configure au niveau base de données, pas dans le code applicatif.
 
@@ -69,7 +69,7 @@ using (auth.uid() = user_id);
 
 L'erreur classique : activer RLS en production après le lancement. Chaque requête qui fonctionnait avant commence à retourner des tableaux vides. On active RLS dès le départ, avant le premier déploiement.
 
-### Clerk — ne pas écrire son propre système d'auth en 2026
+### Clerk   ne pas écrire son propre système d'auth en 2026
 
 Je l'ai fait une fois. Une seule fois. JWT, refresh tokens, sessions, OAuth providers, MFA, RBAC... c'est des mois de travail pour gérer correctement ce que Clerk fait en 30 minutes d'intégration.
 
@@ -86,7 +86,7 @@ export default clerkMiddleware((auth, req) => {
 });
 ```
 
-### OpenAI gpt-4o-mini — pas gpt-4o
+### OpenAI gpt-4o-mini   pas gpt-4o
 
 Le ratio coût/qualité de `gpt-4o-mini` est la vraie révélation de 2025. Pour des tâches structurées (adapter un CV à une description de poste, générer des documents légaux à partir de templates) il fait 90% du travail de `gpt-4o` à 5% du prix.
 
@@ -112,7 +112,7 @@ Supabase    Clerk      OpenAI
           (paiement)
 ```
 
-Les services sont découplés mais ils communiquent tous via le même process Next.js. Pas de microservices, pas de files de messages — trop de complexité pour le stade early stage.
+Les services sont découplés mais ils communiquent tous via le même process Next.js. Pas de microservices, pas de files de messages   trop de complexité pour le stade early stage.
 
 ## Les limites réelles (ce qu'on ne te dit pas)
 
@@ -146,7 +146,7 @@ async function callOpenAIWithRetry(params: ChatCompletionParams, maxRetries = 3)
 }
 ```
 
-## Sécurité — les 5 couches non-négociables
+## Sécurité   les 5 couches non-négociables
 
 ```
 1. Clerk          → Auth + sessions JWT (ne pas écrire soi-même)
@@ -182,7 +182,7 @@ export async function generateCV(rawInput: unknown) {
 
 **Tester le flux de paiement en production avant le lancement.** Stripe webhook en local avec `stripe listen --forward-to localhost:3000/api/webhooks/stripe` fonctionne bien. Mais le comportement en production avec les certificats et les timeouts est différent. Testons en staging avec de vraies cartes de test.
 
-**Monitoring applicatif dès le départ.** Vercel donne des métriques d'infrastructure (latence, erreurs HTTP). Ce qu'il ne donne pas : le taux de succès des générations IA, le temps moyen par génération, les prompts qui échouent. Sentry + quelques métriques custom — pas une semaine de travail, mais une journée.
+**Monitoring applicatif dès le départ.** Vercel donne des métriques d'infrastructure (latence, erreurs HTTP). Ce qu'il ne donne pas : le taux de succès des générations IA, le temps moyen par génération, les prompts qui échouent. Sentry + quelques métriques custom   pas une semaine de travail, mais une journée.
 
 ---
 

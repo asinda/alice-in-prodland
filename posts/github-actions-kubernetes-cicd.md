@@ -183,7 +183,7 @@ jobs:
         if: failure()
         run: |
           kubectl rollout undo deployment/app -n staging
-          echo "::error::Deploy failed — rolled back to previous version"
+          echo "::error::Deploy failed   rolled back to previous version"
 ```
 
 ## Sécuriser les secrets
@@ -216,6 +216,6 @@ rules:
 1. **Scan de secrets** dans le code (`gitleaks` ou `trufflesecurity`)
 2. **SBOM** automatique avec chaque release
 3. **Notifications Slack** sur échec de déploiement prod
-4. **Smoke tests plus robustes** — pas juste un `/health`
+4. **Smoke tests plus robustes**   pas juste un `/health`
 
 > Le meilleur pipeline est celui que votre équipe peut debugger à 3h du matin. Gardez-le lisible.

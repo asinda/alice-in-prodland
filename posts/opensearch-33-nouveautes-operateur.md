@@ -1,7 +1,7 @@
 ---
 title: "OpenSearch 3.3 : ce que ça change pour un opérateur de plateforme"
 date: "2026-05-05"
-excerpt: "J'opère OpenSearch en production depuis 3 ans — d'abord sur la plateforme ELK d'Airbus, maintenant sur une plateforme PaaS. Voici ce que la 3.3 change concrètement pour quelqu'un qui gère des clusters au quotidien."
+excerpt: "J'opère OpenSearch en production depuis 3 ans   d'abord sur la plateforme ELK d'Airbus, maintenant sur une plateforme PaaS. Voici ce que la 3.3 change concrètement pour quelqu'un qui gère des clusters au quotidien."
 tags: ["opensearch", "devops", "SRE", "observabilité", "kubernetes"]
 ---
 
@@ -11,7 +11,7 @@ Quand OpenSearch sort une mineure, je lis les release notes comme je lis un post
 
 La nouvelle interface Discover regroupe logs, métriques et traces dans une seule vue. Ça semble cosmétique, mais ça change le flux de travail en incident.
 
-**Avant (OpenSearch 2.x) :** pendant un incident P1, je jonglais entre trois onglets différents — Discover pour les logs, Metrics Analytics pour les timeseries, et Trace Analytics pour le tracing distribué. Coller une timeline mentale entre les trois, c'est du travail cognitif inutile sous stress.
+**Avant (OpenSearch 2.x) :** pendant un incident P1, je jonglais entre trois onglets différents   Discover pour les logs, Metrics Analytics pour les timeseries, et Trace Analytics pour le tracing distribué. Coller une timeline mentale entre les trois, c'est du travail cognitif inutile sous stress.
 
 **Après :** une seule vue, corrélation visuelle immédiate. Si une spike de latence apparaît sur les métriques à 14h03, je peux directement voir les logs et traces correspondantes sans changer d'onglet.
 
@@ -25,14 +25,14 @@ discover.newUX: true
 
 Mon verdict après 2 semaines : l'interface est plus rapide que l'ancienne Discover sur des index de 50GB+, probablement grâce aux optimisations côté requêtage. Quelques bugs d'affichage sur les champs imbriqués, mais rien de bloquant.
 
-## Sources de données multiples — enfin utilisable
+## Sources de données multiples   enfin utilisable
 
 La fonctionnalité _Multiple Data Sources_ existe depuis la 2.x, mais elle était fragile. La 3.3 la stabilise vraiment.
 
 Dans notre architecture, on a trois clusters OpenSearch :
-- `prod-eu-west` — logs et métriques de production
-- `staging-cluster` — environnement de test
-- `archive-cluster` — logs archivés > 90 jours
+- `prod-eu-west`   logs et métriques de production
+- `staging-cluster`   environnement de test
+- `archive-cluster`   logs archivés > 90 jours
 
 Avant, comparer une erreur en prod avec son contexte en staging nécessitait deux Dashboards séparés, deux onglets, deux connexions. Maintenant :
 
@@ -59,12 +59,12 @@ Avant, comparer une erreur en prod avec son contexte en staging nécessitait deu
 
 **Limitation actuelle :** les alertes ne peuvent pas encore agréger sur plusieurs sources. Si vous avez une règle "alerter si erreur 500 > X sur tous les clusters", vous devez toujours créer une alerte par cluster. C'est sur la roadmap.
 
-## Apache Calcite comme moteur PPL — impact sur les requêtes existantes
+## Apache Calcite comme moteur PPL   impact sur les requêtes existantes
 
 PPL (Piped Processing Language) est le langage de requête style pipe d'OpenSearch. La 3.3 migre le moteur vers Apache Calcite.
 
 ```ppl
-# Exemple PPL — unchanged syntax, faster execution
+# Exemple PPL   unchanged syntax, faster execution
 source=logs
 | where level = "ERROR"
 | stats count() by service
@@ -76,7 +76,7 @@ La syntaxe ne change pas, mais les performances sur les agrégations complexes s
 
 **Point d'attention :** certaines fonctions PPL non-standard peuvent se comporter différemment avec Calcite. Faites tourner votre suite de requêtes favorites sur staging avant de migrer. On a eu un cas de `strftime()` qui retournait un format de date légèrement différent.
 
-## L'IA agentique — pas pour demain en prod, mais à surveiller
+## L'IA agentique   pas pour demain en prod, mais à surveiller
 
 OpenSearch 3.3 expose des APIs _agentic search_ et _agentic memory_ pour brancher des LLMs sur vos données.
 
@@ -105,7 +105,7 @@ Je surveille l'adoption dans les 6 prochains mois avant de tester en conditions 
 
 - **Discover en GA** (pas juste preview)
 - **Alertes multi-sources** (manque critique pour les architectures multi-clusters)
-- **Snapshot Management** amélioré — le current est fonctionnel mais verbeux à configurer
+- **Snapshot Management** amélioré   le current est fonctionnel mais verbeux à configurer
 
 OpenSearch continue de rattraper Elasticsearch en termes de fonctionnalités. Sur les workloads que j'opère (logs, métriques, traces), la 3.3 est une mise à jour solide. Migration recommandée dès validation en staging.
 

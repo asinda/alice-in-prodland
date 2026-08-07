@@ -62,7 +62,7 @@ EXPLAIN ANALYZE SELECT * FROM orders WHERE tenant_id = $1 ORDER BY created_at DE
 
 ### Pourquoi c'est passé en prod
 
-1. L'environnement de staging n'avait que 50k lignes — la requête y prenait 12ms.
+1. L'environnement de staging n'avait que 50k lignes   la requête y prenait 12ms.
 2. La review de migration n'avait pas de checklist formelle.
 3. Pas de test de charge post-migration.
 
