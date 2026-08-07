@@ -39,6 +39,9 @@ export interface DbPost {
   title: string;
   excerpt: string;
   content: string;
+  titleEn?: string;
+  excerptEn?: string;
+  contentEn?: string;
   tags: string[];
   type: ContentType;
   status: Status;

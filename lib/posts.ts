@@ -45,6 +45,12 @@ const processor = unified()
   .use(rehypeHighlight, { ignoreMissing: true } as any)
   .use(rehypeStringify, { allowDangerousHtml: true });
 
+export async function renderMarkdown(content: string): Promise<{ contentHtml: string; toc: TocEntry[] }> {
+  const result = await processor.process(content);
+  const contentHtml = result.toString();
+  return { contentHtml, toc: extractToc(contentHtml) };
+}
+
 function extractToc(html: string): TocEntry[] {
   const matches = [...html.matchAll(/<h([23])\s+id="([^"]*)"[^>]*>(.*?)<\/h[23]>/gi)];
   return matches.map(m => ({
