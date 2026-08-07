@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getAllPosts, getPost } from '../../../../lib/posts';
+import { getAllPosts, getPost, renderMarkdown } from '../../../../lib/posts';
+import { getPostBySlug } from '../../../../lib/db';
 import { routing } from '../../../../i18n/routing';
 import TableOfContents from '../../../../components/TableOfContents';
 import CopyCode from '../../../../components/CopyCode';
@@ -45,6 +46,15 @@ export default async function BlogPost(
   const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-GB';
   const post = await getPost(slug);
 
+  // Use English translation if available and locale is EN
+  const dbPost = locale === 'en' ? getPostBySlug(slug) : null;
+  const hasEn = !!(dbPost?.contentEn);
+  const displayTitle   = hasEn ? (dbPost!.titleEn   ?? post.title)   : post.title;
+  const displayExcerpt = hasEn ? (dbPost!.excerptEn ?? post.excerpt)  : post.excerpt;
+  const { contentHtml, toc } = hasEn
+    ? await renderMarkdown(dbPost!.contentEn!)
+    : { contentHtml: post.contentHtml, toc: post.toc };
+
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
   }
@@ -55,7 +65,7 @@ export default async function BlogPost(
         <Link href={`/${locale}/blog`}>{t('back')}</Link>
       </div>
 
-      <div className={post.toc.length > 0 ? styles.articleWrapper : undefined}>
+      <div className={toc.length > 0 ? styles.articleWrapper : undefined}>
         <article>
           <header className={styles.header}>
             <div className={styles.meta}>
@@ -63,8 +73,8 @@ export default async function BlogPost(
               <span className={styles.separator}>·</span>
               <span className={styles.readTime}>{post.readTime} {t('readTime')}</span>
             </div>
-            <h1 className={styles.title}>{post.title}</h1>
-            <p className={styles.excerpt}>{post.excerpt}</p>
+            <h1 className={styles.title}>{displayTitle}</h1>
+            <p className={styles.excerpt}>{displayExcerpt}</p>
             <div className={styles.tagList}>
               {post.tags.map(tag => (
                 <span key={tag} className={styles.tag} data-color={tagColor(tag)}>{tag}</span>
@@ -75,13 +85,13 @@ export default async function BlogPost(
           <div
             id="post-content"
             className={styles.content}
-            dangerouslySetInnerHTML={{ __html: post.contentHtml }}
+            dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
         </article>
 
-        {post.toc.length > 0 && (
+        {toc.length > 0 && (
           <aside className={styles.tocSidebar}>
-            <TableOfContents toc={post.toc} />
+            <TableOfContents toc={toc} />
           </aside>
         )}
       </div>

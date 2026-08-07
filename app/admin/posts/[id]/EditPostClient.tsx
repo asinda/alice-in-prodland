@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { DbPost, IntegrationStatus } from '../../../../lib/db';
 import {
   actionUpdatePost, actionPublishPost, actionUnpublishPost,
-  actionDeletePost, actionRepushPostIntegrations,
+  actionDeletePost, actionRepushPostIntegrations, actionTranslatePost,
 } from '../../../../lib/actions/posts';
 import { actionRenderMarkdown } from '../../../../lib/actions/markdown';
 import styles from '../../../../styles/Admin.module.css';
@@ -27,6 +27,8 @@ export default function EditPostClient({ post }: { post: DbPost }) {
   const [tab, setTab] = useState<'edit' | 'preview'>('edit');
   const [previewHtml, setPreviewHtml] = useState('');
   const [isPreviewing, startPreview] = useTransition();
+  const [isTranslating, startTranslate] = useTransition();
+  const [translateMsg, setTranslateMsg] = useState('');
 
   function switchToPreview() {
     setTab('preview');
@@ -79,6 +81,37 @@ export default function EditPostClient({ post }: { post: DbPost }) {
             Supprimer
           </button>
         </form>
+        <button
+          type="button"
+          className={styles.btnSecondary}
+          disabled={isTranslating}
+          onClick={() => {
+            setTranslateMsg('');
+            startTranslate(async () => {
+              const result = await actionTranslatePost(post.id, 'fr');
+              setTranslateMsg(result.error ? `Erreur : ${result.error}` : post.contentEn ? 'EN mis à jour' : 'Traduction EN générée');
+            });
+          }}
+        >
+          {isTranslating ? '...' : post.contentEn ? 'Re-traduire FR→EN' : 'Traduire FR→EN'}
+        </button>
+        {post.contentEn && (
+          <button
+            type="button"
+            className={styles.btnSecondary}
+            disabled={isTranslating}
+            onClick={() => {
+              setTranslateMsg('');
+              startTranslate(async () => {
+                const result = await actionTranslatePost(post.id, 'en');
+                setTranslateMsg(result.error ? `Erreur : ${result.error}` : 'Traduction EN→FR appliquée');
+              });
+            }}
+          >
+            {isTranslating ? '...' : 'Traduire EN→FR'}
+          </button>
+        )}
+        {translateMsg && <span style={{ fontSize: '0.8rem', color: 'var(--accent-green)', alignSelf: 'center' }}>{translateMsg}</span>}
       </div>
 
       <form action={action} className={styles.form}>

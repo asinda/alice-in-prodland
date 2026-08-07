@@ -8,6 +8,7 @@ import {
 } from '../db';
 import { getFsPostRaw } from '../posts';
 import { generateAndDistribute } from '../agents/distribute';
+import { translatePost } from '../agents/translate';
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -76,6 +77,21 @@ export async function actionDeletePost(id: string) {
   deletePost(id);
   revalidatePath('/admin/posts');
   redirect('/admin/posts');
+}
+
+export async function actionTranslatePost(id: string, from: 'fr' | 'en'): Promise<{ error?: string }> {
+  const post = getPostById(id);
+  if (!post) return { error: 'Post introuvable' };
+  const to = from === 'fr' ? 'en' : 'fr';
+  const result = await translatePost({ title: post.title, excerpt: post.excerpt, content: post.content }, from, to);
+  if (to === 'en') {
+    updatePost(id, { titleEn: result.title, excerptEn: result.excerpt, contentEn: result.content });
+  } else {
+    updatePost(id, { title: result.title, excerpt: result.excerpt, content: result.content });
+  }
+  revalidatePath(`/admin/posts/${id}`);
+  revalidatePath('/blog');
+  return {};
 }
 
 export async function actionImportFsPost(slug: string) {
