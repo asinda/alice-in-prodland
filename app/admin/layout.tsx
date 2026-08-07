@@ -37,6 +37,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
 
           <span className={styles.navSection}>site</span>
+          <Link href="/admin/stats" className={styles.navLink}>
+            <span className={styles.navIcon}>◉</span> Statistiques
+          </Link>
           <Link href="/" className={styles.navLink} target="_blank">
             <span className={styles.navIcon}>↗</span> Voir le site
           </Link>
