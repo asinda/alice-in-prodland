@@ -1,11 +1,11 @@
 ---
 title: "Claude Code dans un workflow DevOps : ce que ça change vraiment"
 date: "2026-05-06"
-excerpt: "J'utilise Claude Code depuis 3 mois dans mon quotidien SRE. Voici ce qui m'a surpris, ce que ça remplace, et ce que ça ne remplacera jamais — avec des exemples concrets sur des pipelines GitLab, des configs Kubernetes, et du Terraform."
+excerpt: "J'utilise Claude Code depuis 3 mois dans mon quotidien SRE. Voici ce qui m'a surpris, ce que ça remplace, et ce que ça ne remplacera jamais   avec des exemples concrets sur des pipelines GitLab, des configs Kubernetes, et du Terraform."
 tags: ["claude-code", "devops", "SRE", "automatisation", "AI", "outils"]
 ---
 
-Je suis sceptique par défaut avec les outils "IA pour dev". Trop de promesses, trop de demos sur des hello world. Alors quand j'ai commencé à utiliser Claude Code, je m'y suis mis sans attentes — juste pour voir.
+Je suis sceptique par défaut avec les outils "IA pour dev". Trop de promesses, trop de demos sur des hello world. Alors quand j'ai commencé à utiliser Claude Code, je m'y suis mis sans attentes   juste pour voir.
 
 Trois mois plus tard, c'est dans mon workflow quotidien. Voici pourquoi.
 
@@ -26,7 +26,7 @@ npm install -g @anthropic-ai/claude-code
 claude
 ```
 
-## Les 3 modes — lequel utiliser quand
+## Les 3 modes   lequel utiliser quand
 
 ### Mode interactif (défaut)
 
@@ -43,7 +43,7 @@ Claude travaille en autonome, édite les fichiers directement. Utile pour :
 
 Claude réfléchit d'abord, propose un plan, attend ton accord, puis exécute. C'est ce que j'utilise pour les **tâches complexes multi-fichiers**. Par exemple : "migre ce pipeline GitLab de l'ancienne syntaxe vers les règles `needs:` + matrice d'environnement".
 
-## Cas d'usage réels — ce qui m'a convaincu
+## Cas d'usage réels   ce qui m'a convaincu
 
 ### 1. Debugging de pipelines GitLab
 
@@ -54,7 +54,7 @@ Mon cas le plus fréquent. Un pipeline casse, l'erreur est cryptique, je colle l
 open Dockerfile: no such file or directory. Le contexte Docker est ./services/api/"
 ```
 
-En 10 secondes, Claude identifie que `context: ./services/api/` et `dockerfile: Dockerfile` cherche le Dockerfile dans `./services/api/Dockerfile`, alors que le Dockerfile est à la racine. Il propose le correctif et explique pourquoi — pas juste le fix, la logique.
+En 10 secondes, Claude identifie que `context: ./services/api/` et `dockerfile: Dockerfile` cherche le Dockerfile dans `./services/api/Dockerfile`, alors que le Dockerfile est à la racine. Il propose le correctif et explique pourquoi   pas juste le fix, la logique.
 
 ### 2. Génération de manifests Kubernetes
 
@@ -77,19 +77,19 @@ Quand je reprends un projet que je n'ai pas touché depuis 6 mois :
 jusqu'au stockage de session"
 ```
 
-Claude lit les fichiers pertinents et te donne un résumé structuré. Pas une doc générique — une explication basée sur **ton** code.
+Claude lit les fichiers pertinents et te donne un résumé structuré. Pas une doc générique   une explication basée sur **ton** code.
 
 ## Ce que ça ne remplace pas
 
 Soyons honnêtes.
 
-**Les décisions d'architecture** : Claude peut te proposer des patterns, mais décider si tu sharde MongoDB ou pas, si tu passes en microservices ou pas — c'est ton contexte métier, ton équipe, ton budget. L'IA génère des options, elle ne décide pas.
+**Les décisions d'architecture** : Claude peut te proposer des patterns, mais décider si tu sharde MongoDB ou pas, si tu passes en microservices ou pas   c'est ton contexte métier, ton équipe, ton budget. L'IA génère des options, elle ne décide pas.
 
 **La compréhension profonde des incidents** : En P1, je ne veux pas une suggestion probabiliste. Je veux des faits. Claude Code peut m'aider à aller plus vite (génère une requête PromQL, explique un stack trace), mais l'analyse causale reste humaine.
 
 **La connaissance implicite** : Claude ne sait pas que votre cluster Kubernetes a une quirk avec les PodDisruptionBudgets à cause d'une version d'opérateur spécifique. Cette connaissance-là, elle est dans les têtes de l'équipe et les post-mortems.
 
-## Configuration CLAUDE.md — l'investissement qui change tout
+## Configuration CLAUDE.md   l'investissement qui change tout
 
 Le fichier `CLAUDE.md` à la racine du projet est lu par Claude au démarrage. C'est là que tu lui donnes le contexte permanent :
 
@@ -124,4 +124,4 @@ L'outil amplifie ce que tu sais déjà faire. Il ne remplace pas la compétence.
 
 ---
 
-*Claude Code est disponible via `npm install -g @anthropic-ai/claude-code`. L'extension VS Code est en beta — elle fonctionne bien pour ceux qui préfèrent une interface graphique.*
+*Claude Code est disponible via `npm install -g @anthropic-ai/claude-code`. L'extension VS Code est en beta   elle fonctionne bien pour ceux qui préfèrent une interface graphique.*

@@ -60,7 +60,7 @@ Le ratio frôlait 0.98 depuis 3 jours. La JVM gonflait son heap à chaque pic de
 
 ## Étape 4 : Récupérer les logs avant le crash
 
-Les logs du pod crashé ne sont plus là — mais ceux du conteneur précédent oui :
+Les logs du pod crashé ne sont plus là   mais ceux du conteneur précédent oui :
 
 ```bash
 kubectl logs -n payments -l app=payment-svc --previous --tail=200

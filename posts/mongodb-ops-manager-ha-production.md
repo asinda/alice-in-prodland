@@ -1,5 +1,5 @@
 ---
-title: "MongoDB Ops Manager HA en production : replica sets, sharding et PBM — ce qu'on ne vous dit pas"
+title: "MongoDB Ops Manager HA en production : replica sets, sharding et PBM   ce qu'on ne vous dit pas"
 date: "2026-04-14"
 excerpt: "18 mois à opérer MongoDB 8.0 avec Ops Manager sur une plateforme PaaS critique. Voici les vraies décisions d'architecture, les pièges du sharding, et pourquoi PBM a remplacé mongodump dans notre stratégie de backup."
 tags: ["mongodb", "devops", "SRE", "kubernetes", "databases"]
@@ -25,11 +25,11 @@ Ops Manager (3 nœuds actif/passif/arbitre)
 
 Le déploiement par défaut d'un replica set fonctionne. En production, il y a trois paramètres qu'on ajuste systématiquement.
 
-**`oplogSizeMB`** — Par défaut, l'oplog fait 5% de l'espace disque ou 1GB. Sur des workloads d'écriture intensive (notre cas avec OpenSearch), un oplog trop petit provoque des secondary lag puis une resynchronisation complète. On a fixé à 50GB.
+**`oplogSizeMB`**   Par défaut, l'oplog fait 5% de l'espace disque ou 1GB. Sur des workloads d'écriture intensive (notre cas avec OpenSearch), un oplog trop petit provoque des secondary lag puis une resynchronisation complète. On a fixé à 50GB.
 
-**`votes` et `priority`** — Dans un déploiement multi-AZ avec deux datacenters, on ajoute un arbitre dans un troisième site. L'arbitre ne stocke pas de données mais participe à l'élection. Attention : un arbitre avec `votes: 1` peut bloquer une élection si les deux DCs principaux perdent la connectivité entre eux. On utilise `priority: 0` sur le secondary du DC secondaire pour forcer la promotion dans le bon DC.
+**`votes` et `priority`**   Dans un déploiement multi-AZ avec deux datacenters, on ajoute un arbitre dans un troisième site. L'arbitre ne stocke pas de données mais participe à l'élection. Attention : un arbitre avec `votes: 1` peut bloquer une élection si les deux DCs principaux perdent la connectivité entre eux. On utilise `priority: 0` sur le secondary du DC secondaire pour forcer la promotion dans le bon DC.
 
-**`readPreference`** — Sur les requêtes analytics et les exports, on route vers `secondaryPreferred`. Ça soulage le primary et les latences analytics passent de 2-3s à 400-500ms.
+**`readPreference`**   Sur les requêtes analytics et les exports, on route vers `secondaryPreferred`. Ça soulage le primary et les latences analytics passent de 2-3s à 400-500ms.
 
 ```javascript
 // Connection string pour l'analytique
@@ -41,7 +41,7 @@ mongodb://user:pass@primary:27017,sec1:27017,sec2:27017/db
 
 ## Sharding : quand et comment
 
-On n'a pas shardé tout de suite. **Le sharding prématuré est l'erreur classique** — il ajoute de la complexité opérationnelle (mongos, config servers) sans bénéfice sur des collections < 50GB.
+On n'a pas shardé tout de suite. **Le sharding prématuré est l'erreur classique**   il ajoute de la complexité opérationnelle (mongos, config servers) sans bénéfice sur des collections < 50GB.
 
 On a shardé quand deux conditions étaient réunies :
 1. Une collection dépassait 100GB avec des requêtes lentes malgré les index
@@ -62,8 +62,8 @@ Piège classique : les **jumbo chunks**. Si un tenant génère 20% du volume, se
 
 `mongodump` a deux problèmes fondamentaux en production :
 
-1. **Pas cohérent sur un cluster shardé** — chaque shard est dumpé indépendamment, les transactions cross-shards ne sont pas atomiques dans le backup
-2. **Pas incrémental** — chaque backup est un full, donc lent et gourmand en stockage
+1. **Pas cohérent sur un cluster shardé**   chaque shard est dumpé indépendamment, les transactions cross-shards ne sont pas atomiques dans le backup
+2. **Pas incrémental**   chaque backup est un full, donc lent et gourmand en stockage
 
 PBM résout les deux. Il utilise l'oplog pour créer des **backups point-in-time cohérents** sur l'ensemble du cluster. Notre configuration :
 
@@ -85,7 +85,7 @@ backup:
 
 **Planification :**
 - Full backup : dimanche 02h00
-- Oplog shipping en continu (PITR activé) — restauration possible à n'importe quel point dans les 7 derniers jours
+- Oplog shipping en continu (PITR activé)   restauration possible à n'importe quel point dans les 7 derniers jours
 - Rétention : 4 fulls + oplog
 
 Pour tester la restauration (ce que tout le monde oublie de faire) :
@@ -114,7 +114,7 @@ Le piège du replication lag : une alerte qui se déclenche à 3h du matin à ca
 
 ## Ce qu'on referait différemment
 
-**Ops Manager en Kubernetes** : on l'a installé sur VMs. En rétrospective, le MongoDB Enterprise Operator Kubernetes aurait simplifié la gestion du cycle de vie. Mais la migration d'Ops Manager vers l'opérateur K8s est non triviale — c'est un projet en cours.
+**Ops Manager en Kubernetes** : on l'a installé sur VMs. En rétrospective, le MongoDB Enterprise Operator Kubernetes aurait simplifié la gestion du cycle de vie. Mais la migration d'Ops Manager vers l'opérateur K8s est non triviale   c'est un projet en cours.
 
 **Monitoring de l'oplog** dès le début : on a eu un incident de resynchronisation à 2h du matin parce que l'oplog window était tombée à 4 heures suite à un spike d'écritures. Maintenant on alerte à < 12h d'oplog window.
 

@@ -66,7 +66,7 @@ k create role pod-reader --verb=get,list,watch --resource=pods $do
 k create rolebinding pod-reader-binding --role=pod-reader --user=alice $do
 ```
 
-## Domaine 1 : Troubleshooting (30% — le plus important)
+## Domaine 1 : Troubleshooting (30%   le plus important)
 
 C'est là que se gagne ou se perd l'examen. Les scénarios typiques :
 
@@ -171,7 +171,7 @@ EOF
 
 | Semaine | Focus |
 |---|---|
-| S1 | Killer.sh mock exam 1 — identifier les lacunes |
+| S1 | Killer.sh mock exam 1   identifier les lacunes |
 | S2 | Réviser les domaines faibles + labs pratiques |
 | S3 | Killer.sh mock exam 2 + timing |
 | S4 | Révision légère, repos 2j avant l'examen |
@@ -180,6 +180,6 @@ EOF
 
 ## Ressources
 
-- [Kubernetes Docs](https://kubernetes.io/docs) — à connaître par cœur pour la navigation
-- [Killer.sh](https://killer.sh) — meilleur simulateur d'examen
+- [Kubernetes Docs](https://kubernetes.io/docs)   à connaître par cœur pour la navigation
+- [Killer.sh](https://killer.sh)   meilleur simulateur d'examen
 - Taskfile personnel avec tous mes one-liners (publié sur ce blog prochainement)

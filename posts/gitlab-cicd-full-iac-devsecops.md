@@ -1,7 +1,7 @@
 ---
-title: "GitLab CI/CD Full IaC : Terraform + Ansible + DevSecOps intégré — architecture complète"
+title: "GitLab CI/CD Full IaC : Terraform + Ansible + DevSecOps intégré   architecture complète"
 date: "2026-03-20"
-excerpt: "Comment on a construit un pipeline GitLab qui déploie de l'infra Terraform, configure les serveurs avec Ansible, scanne les images avec Trivy, et génère une SBOM/SLSA — sans sacrifier la vitesse des devs."
+excerpt: "Comment on a construit un pipeline GitLab qui déploie de l'infra Terraform, configure les serveurs avec Ansible, scanne les images avec Trivy, et génère une SBOM/SLSA   sans sacrifier la vitesse des devs."
 tags: ["CI_CD", "gitlab", "terraform", "ansible", "devops", "kubernetes"]
 ---
 
@@ -66,7 +66,7 @@ ansible:lint:
         - ansible/**/*
 ```
 
-Le `rules: changes:` est fondamental — on ne valide que ce qui a changé. Sur un monorepo avec 20 équipes, sans ce filtre le pipeline tourne pour tout le monde à chaque commit.
+Le `rules: changes:` est fondamental   on ne valide que ce qui a changé. Sur un monorepo avec 20 équipes, sans ce filtre le pipeline tourne pour tout le monde à chaque commit.
 
 ## Stage 2 : Terraform Plan avec commentaire MR automatique
 
@@ -87,7 +87,7 @@ tf:plan:
     - |
       # Post le plan en commentaire MR
       if [ -n "$CI_MERGE_REQUEST_IID" ]; then
-        COMMENT="## Terraform Plan — ${CI_ENVIRONMENT_NAME}\n\`\`\`\n$(cat /tmp/plan.txt | tail -30)\n\`\`\`"
+        COMMENT="## Terraform Plan   ${CI_ENVIRONMENT_NAME}\n\`\`\`\n$(cat /tmp/plan.txt | tail -30)\n\`\`\`"
         curl -s --request POST \
           --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
           --data-urlencode "body=${COMMENT}" \
@@ -99,7 +99,7 @@ tf:plan:
     expire_in: 1 hour
 ```
 
-## Stage 3 : DevSecOps — Trivy, Vault, SBOM
+## Stage 3 : DevSecOps   Trivy, Vault, SBOM
 
 C'est là que beaucoup de pipelines deviennent lents. Nos optimisations :
 
@@ -155,7 +155,7 @@ security:trivy:
       file: false
 ```
 
-L'authentification se fait via JWT (GitLab OIDC → Vault), zéro secret statique dans les variables CI. Le token JWT de GitLab a une durée de vie de 300 secondes — assez pour le job, pas assez pour être exfiltré.
+L'authentification se fait via JWT (GitLab OIDC → Vault), zéro secret statique dans les variables CI. Le token JWT de GitLab a une durée de vie de 300 secondes   assez pour le job, pas assez pour être exfiltré.
 
 ### Génération SBOM
 
@@ -174,7 +174,7 @@ security:sbom:
     expire_in: 90 days
 ```
 
-La SBOM est archivée 90 jours — assez pour répondre aux audits et tracer les composants en cas de CVE découverte a posteriori (cas Log4Shell).
+La SBOM est archivée 90 jours   assez pour répondre aux audits et tracer les composants en cas de CVE découverte a posteriori (cas Log4Shell).
 
 ## Stage 4 : Ansible sur Staging
 

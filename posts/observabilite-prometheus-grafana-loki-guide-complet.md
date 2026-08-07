@@ -1,13 +1,13 @@
 ---
 title: "Monitoring ≠ Observabilité : construire la stack Prometheus + Grafana + Loki + Tempo"
 date: "2026-04-28"
-excerpt: "Tout le monde dit 'on a Grafana, donc on est observables'. Faux. Voici la différence réelle entre monitoring et observabilité, et comment construire une vraie stack des trois pilliers — métriques, logs, traces — avec les outils open source."
+excerpt: "Tout le monde dit 'on a Grafana, donc on est observables'. Faux. Voici la différence réelle entre monitoring et observabilité, et comment construire une vraie stack des trois pilliers   métriques, logs, traces   avec les outils open source."
 tags: ["observabilité", "prometheus", "grafana", "SRE", "kubernetes", "devops"]
 ---
 
-La phrase que j'entends le plus souvent lors des audits d'infrastructure : "on a Grafana, donc on a de l'observabilité". C'est faux, et la différence n'est pas sémantique — elle change ce qu'on est capable de faire pendant un incident.
+La phrase que j'entends le plus souvent lors des audits d'infrastructure : "on a Grafana, donc on a de l'observabilité". C'est faux, et la différence n'est pas sémantique   elle change ce qu'on est capable de faire pendant un incident.
 
-## Monitoring vs Observabilité — la vraie différence
+## Monitoring vs Observabilité   la vraie différence
 
 Le **monitoring** répond à des questions pré-définies :
 - CPU > 80% ?
@@ -56,7 +56,7 @@ Chaque pillier répond à un type de question différent. Un incident réel dema
 >
 > **Cause** : les logs montrent `SQLException: connection pool exhausted` sur le service `order-service` (Loki)
 >
-> **Root cause** : la trace montre que `order-service` appelle `inventory-service` 47 fois par requête au lieu de 1 — régression dans le cache (Tempo)
+> **Root cause** : la trace montre que `order-service` appelle `inventory-service` 47 fois par requête au lieu de 1   régression dans le cache (Tempo)
 
 Sans les traces, tu aurais cherché du côté DB pendant 45 minutes.
 
@@ -71,12 +71,12 @@ namespace: monitoring
   - loki (aggregation des logs)
   - promtail (agent de collecte logs, sur chaque node)
   - tempo (backend de tracing)
-  - otel-collector (OpenTelemetry Collector — normalisation des traces)
+  - otel-collector (OpenTelemetry Collector   normalisation des traces)
 ```
 
 ### Prometheus
 
-Prometheus scrape des endpoints `/metrics` exposés par tes services. Il fonctionne en pull — c'est lui qui va chercher les métriques, pas tes services qui les poussent.
+Prometheus scrape des endpoints `/metrics` exposés par tes services. Il fonctionne en pull   c'est lui qui va chercher les métriques, pas tes services qui les poussent.
 
 ```yaml
 # prometheus.yml
@@ -111,14 +111,14 @@ metadata:
     prometheus.io/path: "/metrics"
 ```
 
-### Loki — Logs sans index
+### Loki   Logs sans index
 
 La différence architecturale de Loki vs Elasticsearch : **pas d'index sur le contenu des logs**. Loki n'indexe que les labels (namespace, pod, container, etc.). Le contenu est compressé et stocké brut.
 
 Conséquence pratique : Loki est 10x moins cher à opérer que Elasticsearch pour du log storage. Mais les requêtes full-text sont plus lentes si tu n'as pas filtré par labels d'abord.
 
 ```logql
-# LogQL — requête Loki
+# LogQL   requête Loki
 # Toujours filtrer par label D'ABORD, puis par contenu
 {namespace="production", app="api-gateway"} 
   |= "ERROR" 
@@ -129,9 +129,9 @@ Conséquence pratique : Loki est 10x moins cher à opérer que Elasticsearch pou
 
 **Piège classique :** faire une requête sur `{namespace="production"}` sans filtre supplémentaire sur des volumes importants. Tu vas scanner des Go de logs compressés. Ajoute toujours le label le plus sélectif d'abord.
 
-### Tempo — Tracing distribué
+### Tempo   Tracing distribué
 
-Tempo est le backend de traces de Grafana Labs. Il est compatible OpenTelemetry, Zipkin, et Jaeger — tu n'as pas à choisir un format de tracing.
+Tempo est le backend de traces de Grafana Labs. Il est compatible OpenTelemetry, Zipkin, et Jaeger   tu n'as pas à choisir un format de tracing.
 
 ```yaml
 # otel-collector-config.yaml
@@ -176,7 +176,7 @@ def get_order(order_id: str):
         # ... ta logique
 ```
 
-## La corrélation — où ça devient de l'observabilité réelle
+## La corrélation   où ça devient de l'observabilité réelle
 
 Prometheus, Loki et Tempo séparément, c'est encore du monitoring amélioré. Ce qui crée de l'observabilité réelle, c'est la **corrélation** entre les trois dans Grafana.
 
@@ -194,7 +194,7 @@ Prometheus, Loki et Tempo séparément, c'est encore du monitoring amélioré. C
         └── Traces : span DB bloque 1.8s sur inventory-service
 ```
 
-Cet enchaînement, sans chercher, sans croiser manuellement — c'est ça, l'observabilité opérationnelle.
+Cet enchaînement, sans chercher, sans croiser manuellement   c'est ça, l'observabilité opérationnelle.
 
 ## Ce qu'on a mis en place en production
 
@@ -205,7 +205,7 @@ Notre stack actuelle tourne sur Kubernetes avec :
 - Grafana avec les datasources configurées via Terraform (pas de clic-clic)
 - Alertes Prometheus → Alertmanager → Zoom Chat (via webhook custom)
 
-La dernière partie — les alertes dans Zoom Chat — a augmenté notre MTTD (Mean Time To Detect) de 12 minutes à 3 minutes. Les équipes voient l'alerte là où elles travaillent déjà, pas dans un outil d'alerting que personne ne regarde.
+La dernière partie   les alertes dans Zoom Chat   a augmenté notre MTTD (Mean Time To Detect) de 12 minutes à 3 minutes. Les équipes voient l'alerte là où elles travaillent déjà, pas dans un outil d'alerting que personne ne regarde.
 
 ---
 
