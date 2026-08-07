@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { routing } from '../../i18n/routing';
 import Link from 'next/link';
+import Script from 'next/script';
 import FooterYear from '../../components/FooterYear';
 import ReadingProgress from '../../components/ReadingProgress';
 import LanguageSwitcher from '../../components/LanguageSwitcher';
@@ -41,6 +42,14 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale}>
+      {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+        <Script
+          defer
+          data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+          src="https://plausible.io/js/script.js"
+          strategy="afterInteractive"
+        />
+      )}
       <ReadingProgress />
       <div className={styles.shell}>
         <header className={styles.header}>
