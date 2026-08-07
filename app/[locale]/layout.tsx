@@ -42,11 +42,10 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale}>
-      {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+      {process.env.NEXT_PUBLIC_CF_BEACON_TOKEN && (
         <Script
-          defer
-          data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
-          src="https://plausible.io/js/script.js"
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={`{"token": "${process.env.NEXT_PUBLIC_CF_BEACON_TOKEN}"}`}
           strategy="afterInteractive"
         />
       )}
