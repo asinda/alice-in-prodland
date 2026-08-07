@@ -28,6 +28,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className={styles.navIcon}>◎</span> Obsidian Vault
           </Link>
 
+          <span className={styles.navSection}>traduction</span>
+          <Link href="/admin/translate" className={styles.navLink}>
+            <span className={styles.navIcon}>⇄</span> FR → EN
+          </Link>
+
           <span className={styles.navSection}>publication</span>
           <Link href="/admin/review" className={styles.navLink}>
             <span className={styles.navIcon}>⟳</span> Révision
