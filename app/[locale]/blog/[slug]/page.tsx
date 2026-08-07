@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getAllPosts, getPost, renderMarkdown } from '../../../../lib/posts';
 import { getPostBySlug } from '../../../../lib/db';
+import { getTranslation } from '../../../../lib/translations';
 import { routing } from '../../../../i18n/routing';
 import TableOfContents from '../../../../components/TableOfContents';
 import CopyCode from '../../../../components/CopyCode';
@@ -47,13 +48,23 @@ export default async function BlogPost(
   const post = await getPost(slug);
 
   // Use English translation if available and locale is EN
-  const dbPost = locale === 'en' ? getPostBySlug(slug) : null;
-  const hasEn = !!(dbPost?.contentEn);
-  const displayTitle   = hasEn ? (dbPost!.titleEn   ?? post.title)   : post.title;
-  const displayExcerpt = hasEn ? (dbPost!.excerptEn ?? post.excerpt)  : post.excerpt;
-  const { contentHtml, toc } = hasEn
-    ? await renderMarkdown(dbPost!.contentEn!)
-    : { contentHtml: post.contentHtml, toc: post.toc };
+  let displayTitle = post.title;
+  let displayExcerpt = post.excerpt;
+  let contentHtml = post.contentHtml;
+  let toc = post.toc;
+
+  if (locale === 'en') {
+    const dbPost = getPostBySlug(slug);
+    const fsTranslation = !dbPost ? getTranslation(slug) : null;
+    const enContent = dbPost?.contentEn ?? fsTranslation?.contentEn;
+    if (enContent) {
+      displayTitle   = dbPost?.titleEn   ?? fsTranslation?.titleEn   ?? post.title;
+      displayExcerpt = dbPost?.excerptEn ?? fsTranslation?.excerptEn ?? post.excerpt;
+      const rendered = await renderMarkdown(enContent);
+      contentHtml = rendered.contentHtml;
+      toc = rendered.toc;
+    }
+  }
 
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
