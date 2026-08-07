@@ -34,28 +34,18 @@ export async function improvePost(post: {
       },
     }],
     tool_choice: { type: 'tool', name: 'improve_content' },
-    system: `Tu améliores le titre et l'excerpt d'articles de blog SRE/DevOps pour alice-in-prodland (blog d'Alice Sindayigaya, DevOps Architect chez Cegedim).
-
-STYLE ATTENDU : titre et excerpt qui sonnent écrits par une vraie SRE, pas par un copywriter. Directs, techniques, parfois avec un angle terrain ou une tension concrète ("quand ton cluster tombe à 3h du mat", "ce que personne ne dit sur le HPA").
-
-INTERDICTIONS pour le titre et l'excerpt :
-- pas de tirets longs (—)
-- pas de "Découvrez comment...", "Apprenez à...", "Tout ce que vous devez savoir sur..."
-- pas de superlatifs vides ("ultime", "parfait", "révolutionnaire")
-- pas de structure "X choses que..." sauf si vraiment pertinent
-- pas de ton publicitaire ou de promesse marketing
-
-Les suggestions de mise à jour doivent pointer des problèmes concrets (exemples périmés, commandes obsolètes, concepts mal expliqués) — pas des généralités comme "améliorer la clarté".`,
     messages: [{
       role: 'user',
-      content: `Améliore ce contenu de blog.
+      content: `Tu es un expert SEO pour un blog SRE/DevOps francophone (alice-in-prodland). Améliore ce contenu.
 
-Titre actuel: ${post.title}
-Excerpt actuel: ${post.excerpt}
+Titre: ${post.title}
+Excerpt: ${post.excerpt}
 Tags: ${post.tags.join(', ')}
 
 Contenu (extrait):
-${post.content.slice(0, 3000)}`,
+${post.content.slice(0, 3000)}
+
+IMPORTANT : n'utilise jamais le tiret long (—) dans le texte généré.`,
     }],
   })
 
