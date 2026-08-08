@@ -99,7 +99,7 @@ export async function actionImportFsPost(slug: string) {
   if (existing) { redirect(`/admin/posts/${existing.id}`); return; }
 
   const raw = getFsPostRaw(slug);
-  if (!raw) throw new Error(`Fichier posts/${slug}.md introuvable`);
+  if (!raw) throw new Error(`Fichier posts/fr/${slug}.md introuvable`);
 
   const post = createPost({ slug, title: raw.title, excerpt: raw.excerpt, content: raw.content, tags: raw.tags, type: 'post', status: 'published', publishedAt: raw.date });
 

@@ -10,7 +10,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
 import { getPosts, getPostBySlug as getDbPostBySlug, type ContentType, type Status, type Integrations } from './db';
 
-const postsDir = path.join(process.cwd(), 'posts');
+const postsDir = path.join(process.cwd(), 'posts', 'fr');
 
 export interface TocEntry {
   id: string;
