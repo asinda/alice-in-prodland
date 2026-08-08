@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getAllPosts } from '../../../lib/posts';
+import { getPostBySlug } from '../../../lib/db';
+import { getTranslation } from '../../../lib/translations';
 import styles from '../../../styles/Blog.module.css';
 
 const TAG_COLORS: Record<string, string> = {
@@ -30,7 +32,18 @@ export default async function BlogIndex({ params }: { params: Promise<{ locale: 
     return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
   }
 
-  const posts = getAllPosts();
+  const rawPosts = getAllPosts();
+  const posts = locale === 'en'
+    ? rawPosts.map(post => {
+        const dbPost = getPostBySlug(post.slug);
+        const fsTrans = !dbPost ? getTranslation(post.slug) : null;
+        return {
+          ...post,
+          title: dbPost?.titleEn ?? fsTrans?.titleEn ?? post.title,
+          excerpt: dbPost?.excerptEn ?? fsTrans?.excerptEn ?? post.excerpt,
+        };
+      })
+    : rawPosts;
 
   return (
     <>
