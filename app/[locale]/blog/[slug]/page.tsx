@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+
+// Force dynamic so translations from posts/en/ are read at request time, not baked at build
+export const dynamic = 'force-dynamic';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getAllPosts, getPost, renderMarkdown } from '../../../../lib/posts';
 import { getPostBySlug } from '../../../../lib/db';
