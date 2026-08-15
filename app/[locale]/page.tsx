@@ -1,6 +1,8 @@
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { getAllPosts, PostMeta } from '../../lib/posts';
+import { getPostBySlug } from '../../lib/db';
+import { getTranslation } from '../../lib/translations';
 import styles from '../../styles/Home.module.css';
 
 const TAG_COLORS: Record<string, string> = {
@@ -23,7 +25,18 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
     return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
   }
 
-  const posts = getAllPosts();
+  const rawPosts = getAllPosts();
+  const posts = locale === 'en'
+    ? rawPosts.map(post => {
+        const dbPost = getPostBySlug(post.slug);
+        const fsTrans = !dbPost ? getTranslation(post.slug) : null;
+        return {
+          ...post,
+          title: dbPost?.titleEn ?? fsTrans?.titleEn ?? post.title,
+          excerpt: dbPost?.excerptEn ?? fsTrans?.excerptEn ?? post.excerpt,
+        };
+      })
+    : rawPosts;
   const featured: PostMeta | undefined = posts[0];
   const recent = posts.slice(1, 4);
 
