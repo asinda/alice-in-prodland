@@ -35,12 +35,12 @@ export default async function BlogIndex({ params }: { params: Promise<{ locale: 
   const rawPosts = getAllPosts();
   const posts = locale === 'en'
     ? rawPosts.map(post => {
+        const fileTrans = getTranslation(post.slug);
         const dbPost = getPostBySlug(post.slug);
-        const fsTrans = !dbPost ? getTranslation(post.slug) : null;
         return {
           ...post,
-          title: dbPost?.titleEn ?? fsTrans?.titleEn ?? post.title,
-          excerpt: dbPost?.excerptEn ?? fsTrans?.excerptEn ?? post.excerpt,
+          title: fileTrans?.titleEn ?? dbPost?.titleEn ?? post.title,
+          excerpt: fileTrans?.excerptEn ?? dbPost?.excerptEn ?? post.excerpt,
         };
       })
     : rawPosts;

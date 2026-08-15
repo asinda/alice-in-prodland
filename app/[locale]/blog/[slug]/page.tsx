@@ -54,12 +54,13 @@ export default async function BlogPost(
   let toc = post.toc;
 
   if (locale === 'en') {
+    // Always check posts/en/ first (works in prod regardless of volume state)
+    const fileTrans = getTranslation(slug);
     const dbPost = getPostBySlug(slug);
-    const fsTranslation = !dbPost ? getTranslation(slug) : null;
-    const enContent = dbPost?.contentEn ?? fsTranslation?.contentEn;
+    const enContent = fileTrans?.contentEn ?? dbPost?.contentEn;
     if (enContent) {
-      displayTitle   = dbPost?.titleEn   ?? fsTranslation?.titleEn   ?? post.title;
-      displayExcerpt = dbPost?.excerptEn ?? fsTranslation?.excerptEn ?? post.excerpt;
+      displayTitle   = fileTrans?.titleEn   ?? dbPost?.titleEn   ?? post.title;
+      displayExcerpt = fileTrans?.excerptEn ?? dbPost?.excerptEn ?? post.excerpt;
       const rendered = await renderMarkdown(enContent);
       contentHtml = rendered.contentHtml;
       toc = rendered.toc;
