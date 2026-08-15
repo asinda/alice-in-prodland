@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-
-const enDir = path.join(process.cwd(), 'posts', 'en');
+// Bundled at build time — always available regardless of process.cwd() in production
+import bundle from '../data/translations-bundle.json';
 
 export interface Translation {
   titleEn: string;
@@ -11,18 +11,24 @@ export interface Translation {
   translatedAt: string;
 }
 
-function enFilePath(slug: string): string {
+type Bundle = Record<string, Translation>;
+const bundled = bundle as Bundle;
+
+// Runtime filesystem path (used by setTranslation to write new translations)
+const enDir = path.join(process.cwd(), 'posts', 'en');
+
+function validateSlug(slug: string): void {
   if (!/^[a-zA-Z0-9_-]+$/.test(slug)) throw new Error('Invalid slug');
-  const filePath = path.join(enDir, `${slug}.md`);
-  const resolved = path.resolve(filePath);
-  if (!resolved.startsWith(path.resolve(enDir) + path.sep)) throw new Error('Path traversal detected');
-  return resolved;
 }
 
 export function getTranslation(slug: string): Translation | null {
-  const filePath = enFilePath(slug);
-  if (!fs.existsSync(filePath)) return null;
+  validateSlug(slug);
+  // Primary: bundled at build time (always works in production)
+  if (bundled[slug]) return bundled[slug];
+  // Fallback: runtime filesystem (for new translations not yet bundled)
   try {
+    const filePath = path.join(enDir, `${slug}.md`);
+    if (!fs.existsSync(filePath)) return null;
     const raw = fs.readFileSync(filePath, 'utf8');
     const { data, content } = matter(raw);
     return {
@@ -37,6 +43,7 @@ export function getTranslation(slug: string): Translation | null {
 }
 
 export function setTranslation(slug: string, t: Omit<Translation, 'translatedAt'>): void {
+  validateSlug(slug);
   if (!fs.existsSync(enDir)) fs.mkdirSync(enDir, { recursive: true });
   const translatedAt = new Date().toISOString();
   const fileContent = matter.stringify(t.contentEn, {
@@ -44,20 +51,12 @@ export function setTranslation(slug: string, t: Omit<Translation, 'translatedAt'
     excerpt: t.excerptEn,
     translatedAt,
   });
-  const filePath = enFilePath(slug);
+  const filePath = path.join(enDir, `${slug}.md`);
   const tmp = filePath + '.tmp';
   fs.writeFileSync(tmp, fileContent);
   fs.renameSync(tmp, filePath);
 }
 
 export function getAllTranslations(): Record<string, Translation> {
-  if (!fs.existsSync(enDir)) return {};
-  const result: Record<string, Translation> = {};
-  for (const file of fs.readdirSync(enDir)) {
-    if (!file.endsWith('.md')) continue;
-    const slug = file.replace('.md', '');
-    const t = getTranslation(slug);
-    if (t) result[slug] = t;
-  }
-  return result;
+  return { ...bundled };
 }
