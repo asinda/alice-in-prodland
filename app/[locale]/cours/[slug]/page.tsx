@@ -1,20 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { connection } from 'next/server';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getCourses, getCourseBySlug } from '../../../../lib/db';
-import { routing } from '../../../../i18n/routing';
+import { getCourseBySlug } from '../../../../lib/db';
+import { getCourseTranslation } from '../../../../lib/courseTranslations';
 import styles from '../../../../styles/Cours.module.css';
-
-export async function generateStaticParams() {
-  const params: { locale: string; slug: string }[] = [];
-  for (const locale of routing.locales) {
-    for (const course of getCourses({ status: 'published' })) {
-      params.push({ locale, slug: course.slug });
-    }
-  }
-  return params;
-}
 
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string; slug: string }> }
@@ -29,12 +20,17 @@ export async function generateMetadata(
 export default async function CoursDetail(
   { params }: { params: Promise<{ locale: string; slug: string }> }
 ) {
+  await connection();
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'courses' });
 
   const course = getCourseBySlug(slug);
   if (!course || course.status !== 'published') notFound();
+
+  const trans = locale === 'en' ? getCourseTranslation(slug) : null;
+  const displayTitle = trans?.titleEn || course.title;
+  const displayDesc = trans?.descriptionEn || course.description;
 
   const sortedLessons = [...course.lessons].sort((a, b) => a.order - b.order);
   const count = sortedLessons.length;
@@ -48,8 +44,8 @@ export default async function CoursDetail(
 
       <header className={styles.courseHeader}>
         <div className={styles.courseIcon}>◈</div>
-        <h1 className={styles.courseTitle}>{course.title}</h1>
-        {course.description && <p className={styles.courseDesc}>{course.description}</p>}
+        <h1 className={styles.courseTitle}>{displayTitle}</h1>
+        {displayDesc && <p className={styles.courseDesc}>{displayDesc}</p>}
         {course.tags.length > 0 && (
           <div className={styles.tagList}>
             {course.tags.map(tag => <span key={tag} className={styles.tag}>{tag}</span>)}
@@ -59,13 +55,17 @@ export default async function CoursDetail(
       </header>
 
       <nav className={styles.lessonNav}>
-        {sortedLessons.map((lesson, i) => (
+        {sortedLessons.map((lesson, i) => {
+          const lessonTrans = trans?.lessons?.[lesson.slug];
+          const lessonTitle = lessonTrans?.titleEn || lesson.title;
+          return (
           <Link key={lesson.id} href={`/${locale}/cours/${slug}/${lesson.slug}`} className={styles.lessonNavItem}>
             <span className={styles.lessonNum}>{i + 1}</span>
-            <span className={styles.lessonNavTitle}>{lesson.title}</span>
+            <span className={styles.lessonNavTitle}>{lessonTitle}</span>
             <span className={styles.lessonArrow}>→</span>
           </Link>
-        ))}
+          );
+        })}
       </nav>
 
       {sortedLessons.length > 0 && (
