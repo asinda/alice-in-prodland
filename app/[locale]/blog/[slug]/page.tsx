@@ -1,13 +1,10 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-
-// Force dynamic so translations from posts/en/ are read at request time, not baked at build
-export const dynamic = 'force-dynamic';
+import { connection } from 'next/server';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getAllPosts, getPost, renderMarkdown } from '../../../../lib/posts';
+import { getPost, renderMarkdown } from '../../../../lib/posts';
 import { getPostBySlug } from '../../../../lib/db';
 import { getTranslation } from '../../../../lib/translations';
-import { routing } from '../../../../i18n/routing';
 import TableOfContents from '../../../../components/TableOfContents';
 import CopyCode from '../../../../components/CopyCode';
 import styles from '../../../../styles/Post.module.css';
@@ -22,16 +19,6 @@ const TAG_COLORS: Record<string, string> = {
 
 function tagColor(tag: string) { return TAG_COLORS[tag] ?? 'default'; }
 
-export async function generateStaticParams() {
-  const params: { locale: string; slug: string }[] = [];
-  for (const locale of routing.locales) {
-    for (const post of getAllPosts()) {
-      params.push({ locale, slug: post.slug });
-    }
-  }
-  return params;
-}
-
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string; slug: string }> }
 ): Promise<Metadata> {
@@ -43,6 +30,7 @@ export async function generateMetadata(
 export default async function BlogPost(
   { params }: { params: Promise<{ locale: string; slug: string }> }
 ) {
+  await connection();
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'blog' });
