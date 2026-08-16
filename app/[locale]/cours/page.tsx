@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getCourses } from '../../../lib/db';
+import { getCourseTranslation } from '../../../lib/courseTranslations';
 import styles from '../../../styles/Cours.module.css';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -15,7 +16,18 @@ export default async function CoursIndex({ params }: { params: Promise<{ locale:
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'courses' });
 
-  const courses = getCourses({ status: 'published' });
+  const rawCourses = getCourses({ status: 'published' });
+  const courses = rawCourses.map(course => {
+    if (locale === 'en') {
+      const t2 = getCourseTranslation(course.slug);
+      return {
+        ...course,
+        title: t2?.titleEn || course.title,
+        description: t2?.descriptionEn || course.description,
+      };
+    }
+    return course;
+  });
 
   return (
     <>
