@@ -3,6 +3,7 @@ import { routing } from './i18n/routing';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { isMaintenanceOn, maintenanceHtml } from './lib/maintenance';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -24,6 +25,28 @@ export default async function middleware(request: NextRequest) {
       return NextResponse.next();
     } catch {
       return NextResponse.redirect(`${SITE_URL}/admin/login`);
+    }
+  }
+
+  if (isMaintenanceOn()) {
+    const previewSecret = process.env.PREVIEW_SECRET;
+    const queryKey = request.nextUrl.searchParams.get('preview');
+    const hasCookie = !!previewSecret && request.cookies.get('preview-token')?.value === previewSecret;
+
+    if (previewSecret && queryKey === previewSecret) {
+      const url = request.nextUrl.clone();
+      url.searchParams.delete('preview');
+      const res = NextResponse.redirect(SITE_URL + url.pathname + url.search);
+      res.cookies.set('preview-token', previewSecret, { httpOnly: true, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
+      return res;
+    }
+
+    if (!hasCookie) {
+      const locale = pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'fr';
+      return new NextResponse(maintenanceHtml(locale), {
+        status: 503,
+        headers: { 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '86400', 'Cache-Control': 'no-store' },
+      });
     }
   }
 
