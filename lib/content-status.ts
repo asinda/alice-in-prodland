@@ -1,4 +1,4 @@
-import fs from 'fs'
+import { readJsonFile, writeJsonFile } from './jsonStore'
 import path from 'path'
 
 const dataFile = path.join(process.cwd(), 'data', 'content-status.json')
@@ -15,18 +15,11 @@ export interface ContentStatus {
 }
 
 function readAll(): Record<string, ContentStatus> {
-  if (!fs.existsSync(dataFile)) return {}
-  try {
-    return JSON.parse(fs.readFileSync(dataFile, 'utf8'))
-  } catch {
-    return {}
-  }
+  return readJsonFile<Record<string, ContentStatus>>(dataFile, {})
 }
 
 function writeAll(data: Record<string, ContentStatus>): void {
-  const tmp = dataFile + '.tmp'
-  fs.writeFileSync(tmp, JSON.stringify(data, null, 2))
-  fs.renameSync(tmp, dataFile)
+  writeJsonFile(dataFile, data)
 }
 
 export function getContentStatus(slug: string): ContentStatus {

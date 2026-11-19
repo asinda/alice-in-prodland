@@ -1,5 +1,5 @@
-import fs from 'fs';
 import path from 'path';
+import { readJsonFile, writeJsonFile } from './jsonStore';
 
 const dataDir = path.join(process.cwd(), 'data');
 
@@ -85,13 +85,11 @@ function now(): string {
 }
 
 function readJson<T>(file: string): T[] {
-  const p = path.join(dataDir, file);
-  if (!fs.existsSync(p)) return [];
-  return JSON.parse(fs.readFileSync(p, 'utf8')) as T[];
+  return readJsonFile<T[]>(path.join(dataDir, file), []);
 }
 
 function writeJson<T>(file: string, data: T[]): void {
-  fs.writeFileSync(path.join(dataDir, file), JSON.stringify(data, null, 2));
+  writeJsonFile(path.join(dataDir, file), data);
 }
 
 // ─── Posts ───────────────────────────────────────────────────────────────────

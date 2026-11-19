@@ -8,6 +8,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import rehypeSanitize from 'rehype-sanitize';
 import { getPosts, getPostBySlug as getDbPostBySlug, type ContentType, type Status, type Integrations } from './db';
 
 const postsDir = path.join(process.cwd(), 'posts', 'fr');
@@ -39,11 +40,12 @@ const _fsPostCache = new Map<string, Post>();
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(remarkRehype)
+  .use(rehypeSanitize)
   .use(rehypeSlug)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .use(rehypeHighlight, { ignoreMissing: true } as any)
-  .use(rehypeStringify, { allowDangerousHtml: true });
+  .use(rehypeStringify);
 
 export async function renderMarkdown(content: string): Promise<{ contentHtml: string; toc: TocEntry[] }> {
   const result = await processor.process(content);

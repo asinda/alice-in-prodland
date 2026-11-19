@@ -70,3 +70,21 @@ describe('removeFromSchedule', () => {
     expect(getSchedule()).toHaveLength(0)
   })
 })
+
+describe('claimNextPending', () => {
+  it("réserve l'entrée (processing) et ne la rend pas deux fois", async () => {
+    const { addToSchedule, claimNextPending } = await import('../schedule')
+    addToSchedule('a', 'fs', '2026-06-01T09:00:00Z')
+    const now = new Date('2026-06-26T10:00:00Z')
+    expect(claimNextPending(now)?.status).toBe('processing')
+    expect(claimNextPending(now)).toBeNull()
+  })
+
+  it('reprend une entrée processing abandonnée depuis plus de 10 minutes', async () => {
+    const { addToSchedule, claimNextPending } = await import('../schedule')
+    addToSchedule('a', 'fs', '2026-06-01T09:00:00Z')
+    claimNextPending(new Date('2026-06-26T10:00:00Z'))
+    expect(claimNextPending(new Date('2026-06-26T10:05:00Z'))).toBeNull()
+    expect(claimNextPending(new Date('2026-06-26T10:11:00Z'))?.slug).toBe('a')
+  })
+})

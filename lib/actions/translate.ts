@@ -1,7 +1,9 @@
 'use server';
 
+import { requireAdmin } from '../require-admin';
+
 import { revalidatePath } from 'next/cache';
-import { getPosts, updatePost, getPostById } from '../db';
+import { getPosts, updatePost } from '../db';
 import { getAllAdminPosts, getFsPostRaw } from '../posts';
 import { translatePost } from '../agents/translate';
 import { setTranslation, getAllTranslations } from '../translations';
@@ -13,6 +15,7 @@ export interface TranslateAllResult {
 }
 
 export async function actionTranslateAll(): Promise<TranslateAllResult> {
+  await requireAdmin();
   const done: string[] = [];
   const skipped: string[] = [];
   const errors: { slug: string; error: string }[] = [];
@@ -61,6 +64,7 @@ export async function actionTranslateAll(): Promise<TranslateAllResult> {
 }
 
 export async function actionTranslateOne(slug: string, source: 'fs' | 'db'): Promise<{ error?: string }> {
+  await requireAdmin();
   try {
     if (source === 'db') {
       const dbPost = getPosts().find(p => p.slug === slug);
