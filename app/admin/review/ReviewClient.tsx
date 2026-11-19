@@ -29,7 +29,7 @@ function PostRow({ post }: { post: PostWithStatus }) {
           {!hasAI && (
             <button
               disabled={isPending}
-              onClick={() => startTransition(() => actionImproveWithAI(post.slug))}
+              onClick={() => startTransition(async () => { await actionImproveWithAI(post.slug) })}
               style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontSize: '0.85rem' }}
             >
               {isPending ? '...' : '✦ IA'}

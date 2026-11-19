@@ -11,7 +11,7 @@ export async function GET(
     const { slug } = await params
     const post = await getPost(slug)
     const buffer = await generateSocialImage({ title: post.title, tags: post.tags })
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=86400',
