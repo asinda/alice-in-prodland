@@ -16,6 +16,13 @@ export function rateLimit(key: string, max: number, windowMs: number, now = Date
   return { ok: true, retryAfterSec: 0 };
 }
 
+/** Consulte l'état sans consommer de quota. */
+export function rateLimitPeek(key: string, max: number, now = Date.now()): { ok: boolean; retryAfterSec: number } {
+  const b = buckets.get(key);
+  if (!b || b.resetAt <= now || b.count < max) return { ok: true, retryAfterSec: 0 };
+  return { ok: false, retryAfterSec: Math.ceil((b.resetAt - now) / 1000) };
+}
+
 export function resetRateLimit(key: string): void {
   buckets.delete(key);
 }

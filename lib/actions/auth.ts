@@ -2,7 +2,7 @@
 
 import { cookies, headers } from 'next/headers';
 import { createHash, timingSafeEqual } from 'node:crypto';
-import { rateLimit, resetRateLimit } from '../rate-limit';
+import { rateLimit, rateLimitPeek, resetRateLimit } from '../rate-limit';
 import { redirect } from 'next/navigation';
 import { signAdminToken } from '../auth';
 
@@ -22,18 +22,24 @@ export async function login(_: unknown, formData: FormData) {
   const xff = (h.get('x-forwarded-for') ?? '').split(',').map(v => v.trim()).filter(Boolean);
   const ip = xff[xff.length - 1] || 'unknown';
   const WINDOW = 15 * 60 * 1000;
-  const perIp = rateLimit(`login:${ip}`, 5, WINDOW);
-  // Plafond global : empêche de contourner la limite par IP en multipliant les sources.
-  const global = rateLimit('login:global', 30, WINDOW);
+  const IP_KEY = `login:${ip}`;
+  const MAX_PER_IP = 5;
+  const MAX_GLOBAL = 50;
+  // Seuls les ÉCHECS consomment le quota : une connexion réussie n'est jamais bloquée
+  // par un attaquant, sauf s'il a déjà épuisé le quota (limite le brute-force distribué).
+  const perIp = rateLimitPeek(IP_KEY, MAX_PER_IP);
+  const global = rateLimitPeek('login:global', MAX_GLOBAL);
   if (!perIp.ok || !global.ok) {
     const wait = Math.ceil(Math.max(perIp.retryAfterSec, global.retryAfterSec) / 60);
     return { error: `Trop de tentatives. Réessayez dans ${wait} min.` };
   }
 
   if (!password || !passwordMatches(password, process.env.ADMIN_PASSWORD)) {
+    rateLimit(IP_KEY, MAX_PER_IP, WINDOW);
+    rateLimit('login:global', MAX_GLOBAL, WINDOW);
     return { error: 'Mot de passe incorrect.' };
   }
-  resetRateLimit(`login:${ip}`);
+  resetRateLimit(IP_KEY);
 
   const token = await signAdminToken();
   const jar = await cookies();

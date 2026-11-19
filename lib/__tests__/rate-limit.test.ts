@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { rateLimit, resetRateLimit } from '../rate-limit'
+import { rateLimit, rateLimitPeek, resetRateLimit } from '../rate-limit'
 
 describe('rateLimit', () => {
   it('bloque après le maximum de tentatives, puis se réinitialise après la fenêtre', () => {
@@ -16,5 +16,12 @@ describe('rateLimit', () => {
     expect(rateLimit('k3', 5, 60_000, 5).ok).toBe(true)
     resetRateLimit('k2')
     expect(rateLimit('k2', 5, 60_000, 6).ok).toBe(true)
+  })
+
+  it('rateLimitPeek ne consomme pas de quota', () => {
+    for (let i = 0; i < 10; i++) expect(rateLimitPeek('k4', 2, 10).ok).toBe(true)
+    rateLimit('k4', 2, 60_000, 10)
+    rateLimit('k4', 2, 60_000, 10)
+    expect(rateLimitPeek('k4', 2, 11).ok).toBe(false)
   })
 })
