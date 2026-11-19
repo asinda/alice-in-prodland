@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
+import { getLocale } from 'next-intl/server';
+import { SITE_URL } from '../lib/site';
 import '../styles/globals.css';
 import 'highlight.js/styles/github-dark.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -12,9 +15,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
   return (
-    <html suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );

@@ -1,15 +1,33 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { createHash, timingSafeEqual } from 'node:crypto';
+import { rateLimit, resetRateLimit } from '../rate-limit';
 import { redirect } from 'next/navigation';
 import { signAdminToken } from '../auth';
 
-export async function login(_: unknown, formData: FormData) {
-  const password = formData.get('password') as string;
+const sha = (v: string) => createHash('sha256').update(v).digest();
 
-  if (!password || password !== process.env.ADMIN_PASSWORD) {
+function passwordMatches(input: string, expected: string | undefined): boolean {
+  if (!expected) return false;
+  return timingSafeEqual(sha(input), sha(expected));
+}
+
+export async function login(_: unknown, formData: FormData) {
+  const password = (formData.get('password') as string) ?? '';
+
+  const h = await headers();
+  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
+  const key = `login:${ip}`;
+  const limit = rateLimit(key, 5, 15 * 60 * 1000);
+  if (!limit.ok) {
+    return { error: `Trop de tentatives. Réessayez dans ${Math.ceil(limit.retryAfterSec / 60)} min.` };
+  }
+
+  if (!password || !passwordMatches(password, process.env.ADMIN_PASSWORD)) {
     return { error: 'Mot de passe incorrect.' };
   }
+  resetRateLimit(key);
 
   const token = await signAdminToken();
   const jar = await cookies();

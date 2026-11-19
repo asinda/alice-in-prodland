@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { MODELS, assertNotTruncated } from './models'
 
 export interface TranslateOutput {
   title: string
@@ -14,8 +15,8 @@ export async function translatePost(
   const client = new Anthropic()
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 8096,
+    model: MODELS.fast,
+    max_tokens: 16000,
     tools: [{
       name: 'translation_output',
       description: 'Retourne le contenu traduit',
@@ -48,6 +49,7 @@ ${post.content}`,
     }],
   })
 
+  assertNotTruncated(response.stop_reason, 'translate')
   const toolUse = response.content.find(b => b.type === 'tool_use')
   if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No tool use in response')
   return toolUse.input as TranslateOutput

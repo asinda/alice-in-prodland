@@ -1,5 +1,6 @@
 // lib/agents/social.ts
 import Anthropic from '@anthropic-ai/sdk'
+import { MODELS, assertNotTruncated } from './models'
 
 export interface SocialDistributionOutput {
   linkedin: { text: string; articleUrl: string }
@@ -18,7 +19,7 @@ export async function generateSocialContent(post: {
 }): Promise<SocialDistributionOutput> {
   const client = new Anthropic()
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: MODELS.quality,
     max_tokens: 2048,
     tools: [{
       name: 'generate_social_content',
@@ -80,6 +81,7 @@ IMPORTANT : n'utilise jamais le tiret long (—) dans le texte généré.`,
     }],
   })
 
+  assertNotTruncated(response.stop_reason, 'social')
   const toolUse = response.content.find(b => b.type === 'tool_use')
   if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No tool use in response')
   const output = toolUse.input as SocialDistributionOutput

@@ -20,6 +20,9 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(`${SITE_URL}/admin/login`);
   }
 
+  // Les routes API (webhook de publication, health, og) ne sont ni localisées ni en maintenance
+  if (pathname.startsWith('/api/')) return NextResponse.next();
+
   if (isMaintenanceOn()) {
     const previewSecret = process.env.PREVIEW_SECRET;
     const queryKey = request.nextUrl.searchParams.get('preview');
