@@ -1,5 +1,6 @@
 // lib/agents/improve.ts
 import Anthropic from '@anthropic-ai/sdk'
+import { MODELS, assertNotTruncated } from './models'
 
 export interface ImproveOutput {
   improvedTitle: string
@@ -17,7 +18,7 @@ export async function improvePost(post: {
 }): Promise<ImproveOutput> {
   const client = new Anthropic()
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: MODELS.fast,
     max_tokens: 1024,
     tools: [{
       name: 'improve_content',
@@ -49,6 +50,7 @@ IMPORTANT : n'utilise jamais le tiret long (—) dans le texte généré.`,
     }],
   })
 
+  assertNotTruncated(response.stop_reason, 'improve')
   const toolUse = response.content.find(b => b.type === 'tool_use')
   if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No tool use in response')
   return toolUse.input as ImproveOutput
