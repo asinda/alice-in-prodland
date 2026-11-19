@@ -17,17 +17,23 @@ export async function login(_: unknown, formData: FormData) {
   const password = (formData.get('password') as string) ?? '';
 
   const h = await headers();
-  const ip = (h.get('x-forwarded-for') ?? '').split(',')[0].trim() || 'unknown';
-  const key = `login:${ip}`;
-  const limit = rateLimit(key, 5, 15 * 60 * 1000);
-  if (!limit.ok) {
-    return { error: `Trop de tentatives. Réessayez dans ${Math.ceil(limit.retryAfterSec / 60)} min.` };
+  // Entrée la plus à droite de X-Forwarded-For : ajoutée par NOTRE proxy (Render), donc non
+  // falsifiable. Les entrées de gauche sont fournies par le client et ne sont pas fiables.
+  const xff = (h.get('x-forwarded-for') ?? '').split(',').map(v => v.trim()).filter(Boolean);
+  const ip = xff[xff.length - 1] || 'unknown';
+  const WINDOW = 15 * 60 * 1000;
+  const perIp = rateLimit(`login:${ip}`, 5, WINDOW);
+  // Plafond global : empêche de contourner la limite par IP en multipliant les sources.
+  const global = rateLimit('login:global', 30, WINDOW);
+  if (!perIp.ok || !global.ok) {
+    const wait = Math.ceil(Math.max(perIp.retryAfterSec, global.retryAfterSec) / 60);
+    return { error: `Trop de tentatives. Réessayez dans ${wait} min.` };
   }
 
   if (!password || !passwordMatches(password, process.env.ADMIN_PASSWORD)) {
     return { error: 'Mot de passe incorrect.' };
   }
-  resetRateLimit(key);
+  resetRateLimit(`login:${ip}`);
 
   const token = await signAdminToken();
   const jar = await cookies();
