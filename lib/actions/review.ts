@@ -1,5 +1,7 @@
 // lib/actions/review.ts
 'use server'
+
+import { requireAdmin } from '../require-admin';
 import { revalidatePath } from 'next/cache'
 import { getContentStatus, setContentStatus } from '../content-status'
 import { improvePost } from '../agents/improve'
@@ -8,11 +10,13 @@ import { getPostBySlug, updatePost } from '../db'
 import type { ImproveOutput } from '../agents/improve'
 
 export async function actionMarkReady(slug: string): Promise<void> {
+  await requireAdmin();
   setContentStatus(slug, { status: 'ready', reviewedAt: new Date().toISOString() })
   revalidatePath('/admin/review')
 }
 
 export async function actionImproveWithAI(slug: string): Promise<ImproveOutput> {
+  await requireAdmin();
   // Use getPostBySlug for DB posts (works for drafts), getFsPostRaw for FS-only posts
   const dbPost = getPostBySlug(slug)
   const fsPost = !dbPost ? getFsPostRaw(slug) : null
@@ -34,6 +38,7 @@ export async function actionImproveWithAI(slug: string): Promise<ImproveOutput> 
 }
 
 export async function actionAcceptImprovement(slug: string): Promise<void> {
+  await requireAdmin();
   const status = getContentStatus(slug)
   if (!status.aiImprovedTitle) return
   const dbPost = getPostBySlug(slug)

@@ -2,14 +2,10 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyAdminToken } from './lib/auth';
 import { isMaintenanceOn, maintenanceHtml } from './lib/maintenance';
 
 const intlMiddleware = createMiddleware(routing);
-
-const secret = () => new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'fallback-dev-secret-change-in-prod'
-);
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://alice-in-prodland.onrender.com').replace(/\/$/, '');
 
@@ -20,12 +16,8 @@ export default async function middleware(request: NextRequest) {
     if (pathname === '/admin/login') return NextResponse.next();
     const token = request.cookies.get('admin-token')?.value;
     if (!token) return NextResponse.redirect(`${SITE_URL}/admin/login`);
-    try {
-      await jwtVerify(token, secret());
-      return NextResponse.next();
-    } catch {
-      return NextResponse.redirect(`${SITE_URL}/admin/login`);
-    }
+    if (await verifyAdminToken(token)) return NextResponse.next();
+    return NextResponse.redirect(`${SITE_URL}/admin/login`);
   }
 
   if (isMaintenanceOn()) {

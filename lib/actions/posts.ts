@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '../require-admin';
+
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import {
@@ -15,6 +17,7 @@ function slugify(s: string) {
 }
 
 export async function actionCreatePost(_: unknown, formData: FormData) {
+  await requireAdmin();
   const title = (formData.get('title') as string).trim();
   const excerpt = (formData.get('excerpt') as string).trim();
   const content = (formData.get('content') as string).trim();
@@ -31,6 +34,7 @@ export async function actionCreatePost(_: unknown, formData: FormData) {
 }
 
 export async function actionUpdatePost(_: unknown, formData: FormData) {
+  await requireAdmin();
   const id = formData.get('id') as string;
   const title = (formData.get('title') as string).trim();
   const excerpt = (formData.get('excerpt') as string).trim();
@@ -47,6 +51,7 @@ export async function actionUpdatePost(_: unknown, formData: FormData) {
 }
 
 export async function actionPublishPost(id: string) {
+  await requireAdmin();
   const post = getPostById(id);
   if (!post) return;
   publishPost(id);
@@ -59,6 +64,7 @@ export async function actionPublishPost(id: string) {
 }
 
 export async function actionRepushPostIntegrations(id: string) {
+  await requireAdmin();
   const post = getPostById(id);
   if (!post || post.status !== 'published') return;
   await generateAndDistribute(post);
@@ -67,6 +73,7 @@ export async function actionRepushPostIntegrations(id: string) {
 }
 
 export async function actionUnpublishPost(id: string) {
+  await requireAdmin();
   unpublishPost(id);
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
@@ -74,12 +81,14 @@ export async function actionUnpublishPost(id: string) {
 }
 
 export async function actionDeletePost(id: string) {
+  await requireAdmin();
   deletePost(id);
   revalidatePath('/admin/posts');
   redirect('/admin/posts');
 }
 
 export async function actionTranslatePost(id: string, from: 'fr' | 'en'): Promise<{ error?: string }> {
+  await requireAdmin();
   const post = getPostById(id);
   if (!post) return { error: 'Post introuvable' };
   const to = from === 'fr' ? 'en' : 'fr';
@@ -95,6 +104,7 @@ export async function actionTranslatePost(id: string, from: 'fr' | 'en'): Promis
 }
 
 export async function actionImportFsPost(slug: string) {
+  await requireAdmin();
   const existing = getPostBySlug(slug);
   if (existing) { redirect(`/admin/posts/${existing.id}`); return; }
 

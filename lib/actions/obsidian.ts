@@ -1,11 +1,14 @@
 'use server';
 
+import { requireAdmin } from '../require-admin';
+
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { readVaultFile, cleanObsidianMarkdown, extractTitle } from '../obsidian';
 import { createPost } from '../db';
 
 export async function actionImportAsPost(formData: FormData) {
+  await requireAdmin();
   const filePath = formData.get('filePath') as string;
   if (!filePath) return;
 
