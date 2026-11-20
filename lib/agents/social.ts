@@ -1,6 +1,7 @@
 // lib/agents/social.ts
-import Anthropic from '@anthropic-ai/sdk'
-import { MODELS, assertNotTruncated } from './models'
+import { z } from 'zod'
+import { MODELS } from './models'
+import { callTool, noEmDash, untrusted } from './runtime'
 
 export interface SocialDistributionOutput {
   linkedin: { text: string; articleUrl: string }
@@ -8,6 +9,16 @@ export interface SocialDistributionOutput {
   youtube: { communityPost: string }
   tiktok: { caption: string; script: string }
 }
+
+const t = (max: number) => z.string().trim().min(1).max(max).transform(noEmDash)
+
+export const socialSchema = z.object({
+  linkedin: z.object({ text: t(3000), articleUrl: z.string() }),
+  // Limites des plateformes : Instagram 2200, YouTube community 5000, TikTok caption 150
+  instagram: z.object({ caption: t(2200), imagePrompt: t(1000) }),
+  youtube: z.object({ communityPost: t(5000) }),
+  tiktok: z.object({ caption: t(150), script: t(3000) }),
+})
 
 export async function generateSocialContent(post: {
   title: string
@@ -17,11 +28,12 @@ export async function generateSocialContent(post: {
   url: string
   type: string
 }): Promise<SocialDistributionOutput> {
-  const client = new Anthropic()
-  const response = await client.messages.create({
+  const output = await callTool<SocialDistributionOutput>({
+    agent: 'social',
     model: MODELS.quality,
-    max_tokens: 2048,
-    tools: [{
+    maxTokens: 2048,
+    schema: socialSchema,
+    tool: {
       name: 'generate_social_content',
       description: 'Génère le contenu social adapté à chaque plateforme',
       input_schema: {
@@ -61,30 +73,23 @@ export async function generateSocialContent(post: {
         },
         required: ['linkedin', 'instagram', 'youtube', 'tiktok'],
       },
-    }],
-    tool_choice: { type: 'tool', name: 'generate_social_content' },
-    messages: [{
-      role: 'user',
-      content: `Tu es Alice Sindayigaya, DevOps Architect / SRE chez Cegedim. Génère du contenu social pour ce post de blog SRE/DevOps en français.
+    },
+    prompt: `Tu es Alice Sindayigaya, DevOps Architect / SRE chez Cegedim. Génère du contenu social pour ce post de blog SRE/DevOps en français.
 
-Titre: ${post.title}
+${untrusted('article', `Titre: ${post.title}
 Excerpt: ${post.excerpt}
 URL: ${post.url}
 Tags: ${post.tags.join(', ')}
 Type: ${post.type}
 
 Contenu (extrait):
-${post.content.slice(0, 2000)}
+${post.content.slice(0, 2000)}`)}
 
 Adapte le ton à chaque plateforme. Contenu en français uniquement.
 IMPORTANT : n'utilise jamais le tiret long (—) dans le texte généré.`,
-    }],
   })
 
-  assertNotTruncated(response.stop_reason, 'social')
-  const toolUse = response.content.find(b => b.type === 'tool_use')
-  if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No tool use in response')
-  const output = toolUse.input as SocialDistributionOutput
+  // L'URL de l'article est toujours celle du site, jamais celle produite par le modèle
   output.linkedin.articleUrl = post.url
   return output
 }

@@ -1,5 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk'
-import { MODELS, assertNotTruncated } from './models'
+import { z } from 'zod'
+import { MODELS } from './models'
+import { callTool, noEmDash, untrusted } from './runtime'
 
 export interface TranslateOutput {
   title: string
@@ -7,17 +8,28 @@ export interface TranslateOutput {
   content: string
 }
 
+/** La traduction doit être complète : une sortie bien plus courte que la source est une troncature ou un résumé. */
+export function translateSchema(sourceLength: number) {
+  const minContent = Math.floor(sourceLength * 0.4)
+  return z.object({
+    title: z.string().trim().min(1).max(300).transform(noEmDash),
+    excerpt: z.string().trim().max(600).transform(noEmDash),
+    content: z.string().min(Math.max(1, minContent), `contenu trop court (minimum ${minContent} caractères, la traduction semble incomplète)`),
+  })
+}
+
 export async function translatePost(
   post: { title: string; excerpt: string; content: string },
   from: 'fr' | 'en',
   to: 'fr' | 'en'
 ): Promise<TranslateOutput> {
-  const client = new Anthropic()
-
-  const response = await client.messages.create({
+  return callTool<TranslateOutput>({
+    agent: 'translate',
     model: MODELS.fast,
-    max_tokens: 16000,
-    tools: [{
+    maxTokens: 16000,
+    timeoutMs: 180_000,
+    schema: translateSchema(post.content.length),
+    tool: {
       name: 'translation_output',
       description: 'Retourne le contenu traduit',
       input_schema: {
@@ -29,11 +41,8 @@ export async function translatePost(
         },
         required: ['title', 'excerpt', 'content'],
       },
-    }],
-    tool_choice: { type: 'tool', name: 'translation_output' },
-    messages: [{
-      role: 'user',
-      content: `Traduis ce contenu de blog technique SRE/DevOps du ${from === 'fr' ? 'français' : 'anglais'} vers le ${to === 'fr' ? 'français' : 'anglais'}.
+    },
+    prompt: `Traduis ce contenu de blog technique SRE/DevOps du ${from === 'fr' ? 'français' : 'anglais'} vers le ${to === 'fr' ? 'français' : 'anglais'}.
 
 Règles :
 - Garde exactement la même structure Markdown (titres, code blocks, listes)
@@ -41,16 +50,10 @@ Règles :
 - Ton naturel et technique, n'utilise jamais le tiret long (—)
 - Traduis le titre et l'excerpt aussi
 
-Titre : ${post.title}
+${untrusted('article', `Titre : ${post.title}
 Excerpt : ${post.excerpt}
 
 Contenu :
-${post.content}`,
-    }],
+${post.content}`)}`,
   })
-
-  assertNotTruncated(response.stop_reason, 'translate')
-  const toolUse = response.content.find(b => b.type === 'tool_use')
-  if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No tool use in response')
-  return toolUse.input as TranslateOutput
 }

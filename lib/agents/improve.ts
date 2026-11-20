@@ -1,6 +1,7 @@
 // lib/agents/improve.ts
-import Anthropic from '@anthropic-ai/sdk'
-import { MODELS, assertNotTruncated } from './models'
+import { z } from 'zod'
+import { MODELS } from './models'
+import { callTool, noEmDash, untrusted } from './runtime'
 
 export interface ImproveOutput {
   improvedTitle: string
@@ -9,6 +10,15 @@ export interface ImproveOutput {
   addedTags: string[]
 }
 
+const text = (max: number) => z.string().trim().min(1).max(max).transform(noEmDash)
+
+export const improveSchema = z.object({
+  improvedTitle: text(70),
+  improvedExcerpt: text(150),
+  suggestions: z.array(text(400)).length(3),
+  addedTags: z.array(z.string().trim().min(1).max(30)).max(10),
+})
+
 export async function improvePost(post: {
   slug: string
   title: string
@@ -16,11 +26,12 @@ export async function improvePost(post: {
   content: string
   tags: string[]
 }): Promise<ImproveOutput> {
-  const client = new Anthropic()
-  const response = await client.messages.create({
+  return callTool<ImproveOutput>({
+    agent: 'improve',
     model: MODELS.fast,
-    max_tokens: 1024,
-    tools: [{
+    maxTokens: 1024,
+    schema: improveSchema,
+    tool: {
       name: 'improve_content',
       description: 'Retourne le contenu amélioré pour le SEO',
       input_schema: {
@@ -33,25 +44,16 @@ export async function improvePost(post: {
         },
         required: ['improvedTitle', 'improvedExcerpt', 'suggestions', 'addedTags'],
       },
-    }],
-    tool_choice: { type: 'tool', name: 'improve_content' },
-    messages: [{
-      role: 'user',
-      content: `Tu es un expert SEO pour un blog SRE/DevOps francophone (alice-in-prodland). Améliore ce contenu.
+    },
+    prompt: `Tu es un expert SEO pour un blog SRE/DevOps francophone (alice-in-prodland). Améliore ce contenu.
 
-Titre: ${post.title}
+${untrusted('article', `Titre: ${post.title}
 Excerpt: ${post.excerpt}
 Tags: ${post.tags.join(', ')}
 
 Contenu (extrait):
-${post.content.slice(0, 3000)}
+${post.content.slice(0, 3000)}`)}
 
 IMPORTANT : n'utilise jamais le tiret long (—) dans le texte généré.`,
-    }],
   })
-
-  assertNotTruncated(response.stop_reason, 'improve')
-  const toolUse = response.content.find(b => b.type === 'tool_use')
-  if (!toolUse || toolUse.type !== 'tool_use') throw new Error('No tool use in response')
-  return toolUse.input as ImproveOutput
 }
