@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAdminToken } from './lib/auth';
 import { isMaintenanceOn, maintenanceHtml } from './lib/maintenance';
+import { previewCookieValue, safeEqual } from './lib/preview';
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -26,13 +27,14 @@ export default async function middleware(request: NextRequest) {
   if (isMaintenanceOn()) {
     const previewSecret = process.env.PREVIEW_SECRET;
     const queryKey = request.nextUrl.searchParams.get('preview');
-    const hasCookie = !!previewSecret && request.cookies.get('preview-token')?.value === previewSecret;
+    const cookieValue = request.cookies.get('preview-token')?.value;
+    const hasCookie = !!previewSecret && !!cookieValue && await safeEqual(cookieValue, await previewCookieValue(previewSecret));
 
-    if (previewSecret && queryKey === previewSecret) {
+    if (previewSecret && queryKey && await safeEqual(queryKey, previewSecret)) {
       const url = request.nextUrl.clone();
       url.searchParams.delete('preview');
       const res = NextResponse.redirect(SITE_URL + url.pathname + url.search);
-      res.cookies.set('preview-token', previewSecret, { httpOnly: true, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
+      res.cookies.set('preview-token', await previewCookieValue(previewSecret), { httpOnly: true, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
       return res;
     }
 

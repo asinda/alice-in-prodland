@@ -92,7 +92,13 @@ export async function actionTranslatePost(id: string, from: 'fr' | 'en'): Promis
   const post = getPostById(id);
   if (!post) return { error: 'Post introuvable' };
   const to = from === 'fr' ? 'en' : 'fr';
-  const result = await translatePost({ title: post.title, excerpt: post.excerpt, content: post.content }, from, to);
+  let result;
+  try {
+    result = await translatePost({ title: post.title, excerpt: post.excerpt, content: post.content }, from, to);
+  } catch (e) {
+    console.error('[translate]', id, e);
+    return { error: 'Échec de la traduction' };
+  }
   if (to === 'en') {
     updatePost(id, { titleEn: result.title, excerptEn: result.excerpt, contentEn: result.content });
   } else {
@@ -109,7 +115,7 @@ export async function actionImportFsPost(slug: string) {
   if (existing) { redirect(`/admin/posts/${existing.id}`); return; }
 
   const raw = getFsPostRaw(slug);
-  if (!raw) throw new Error(`Fichier posts/fr/${slug}.md introuvable`);
+  if (!raw) throw new Error('Article introuvable');
 
   const post = createPost({ slug, title: raw.title, excerpt: raw.excerpt, content: raw.content, tags: raw.tags, type: 'post', status: 'published', publishedAt: raw.date });
 
