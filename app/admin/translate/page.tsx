@@ -1,7 +1,9 @@
 import styles from '../../../styles/Admin.module.css';
 import { getAllAdminPosts } from '../../../lib/posts';
 import { getPosts } from '../../../lib/db';
-import { getAllTranslations } from '../../../lib/translations';
+import { getAllTranslations, getTranslation } from '../../../lib/translations';
+import { getFsPostRaw } from '../../../lib/posts';
+import { checkTranslationConsistency } from '../../../lib/agents/consistency';
 import TranslateClient from './TranslateClient';
 
 export default function TranslatePage() {
@@ -14,7 +16,14 @@ export default function TranslatePage() {
     const hasEn = p.source === 'db'
       ? !!(dbPost?.contentEn)
       : !!(translations[p.slug]);
+    let issues: string[] = [];
+    if (hasEn) {
+      const fr = p.source === 'db' ? dbPost?.content : getFsPostRaw(p.slug)?.content;
+      const en = p.source === 'db' ? dbPost?.contentEn : getTranslation(p.slug)?.contentEn;
+      if (fr && en) issues = checkTranslationConsistency(fr, en).map(i => `${i.severity === 'error' ? '✗' : '⚠'} ${i.message}`);
+    }
     return {
+      issues,
       slug: p.slug,
       title: p.title,
       source: p.source as 'fs' | 'db',

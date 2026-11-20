@@ -8,6 +8,7 @@ import { improvePost } from '../agents/improve'
 import { getFsPostRaw } from '../posts'
 import { getPostBySlug, updatePost } from '../db'
 import type { ImproveOutput } from '../agents/improve'
+import { reviewTechnical, type TechReviewOutput } from '../agents/techreview'
 
 export async function actionMarkReady(slug: string): Promise<void> {
   await requireAdmin();
@@ -51,4 +52,19 @@ export async function actionAcceptImprovement(slug: string): Promise<void> {
   }
   setContentStatus(slug, { status: 'ready', reviewedAt: new Date().toISOString() })
   revalidatePath('/admin/review')
+}
+
+export async function actionTechReview(slug: string): Promise<{ result?: TechReviewOutput; error?: string }> {
+  await requireAdmin();
+  const dbPost = getPostBySlug(slug)
+  const fsPost = !dbPost ? getFsPostRaw(slug) : null
+  const title = dbPost?.title ?? fsPost?.title
+  const content = dbPost?.content ?? fsPost?.content
+  if (!title || !content) return { error: 'Article introuvable' }
+  try {
+    return { result: await reviewTechnical({ title, content }) }
+  } catch (e) {
+    console.error('[techreview]', slug, e)
+    return { error: 'La relecture a échoué' }
+  }
 }
