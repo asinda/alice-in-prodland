@@ -13,7 +13,11 @@ vi.mock('@/lib/db', () => ({
   createPost: vi.fn(),
 }))
 vi.mock('@/lib/posts', () => ({ getFsPostRaw: vi.fn() }))
-vi.mock('@/lib/agents/distribute', () => ({ generateAndDistribute: vi.fn() }))
+vi.mock('@/lib/agents/distribute', () => ({
+  generateAndDistribute: vi.fn(),
+  prepareSocialDraft: vi.fn(),
+  isAutoPostEnabled: vi.fn(() => true),
+}))
 
 function makeRequest(token: string) {
   return new NextRequest('http://localhost/api/schedule/publish', {
@@ -145,6 +149,52 @@ describe('POST /api/schedule/publish - robustesse', () => {
     vi.mocked(claimNextPending).mockReturnValue(entry)
     vi.mocked(getPostBySlug).mockReturnValue(post('published'))
     vi.mocked(generateAndDistribute).mockResolvedValue({ failed: true })
+    const { POST } = await import('@/app/api/schedule/publish/route')
+    const res = await POST(makeRequest('secret-de-test-32-caracteres-min'))
+    expect(res.status).toBe(502)
+    expect(markFailed).toHaveBeenCalled()
+    expect(markPublished).not.toHaveBeenCalled()
+  })
+})
+
+describe('POST /api/schedule/publish - validation humaine', () => {
+  beforeEach(() => {
+    process.env.PUBLISH_SECRET = 'secret-de-test-32-caracteres-min'
+    vi.resetModules()
+    vi.clearAllMocks()
+  })
+
+  const entry = { id: 's1', slug: 'p', source: 'db' as const, scheduledAt: '2026-01-01T09:00:00Z', status: 'processing' as const }
+  const post = {
+    id: 'post1', slug: 'p', title: 'P', excerpt: '', content: '', tags: [], type: 'post' as const, status: 'published' as const,
+    publishedAt: null, createdAt: '', updatedAt: '',
+    integrations: { linkedin: { status: 'idle' as const }, gumroad: { status: 'idle' as const }, tiktok: { status: 'idle' as const }, instagram: { status: 'idle' as const }, youtube: { status: 'idle' as const } },
+  }
+
+  it('par defaut, prepare un brouillon et ne poste RIEN', async () => {
+    const { claimNextPending, markPublished } = await import('@/lib/schedule')
+    const { getPostBySlug } = await import('@/lib/db')
+    const dist = await import('@/lib/agents/distribute')
+    vi.mocked(dist.isAutoPostEnabled).mockReturnValue(false)
+    vi.mocked(claimNextPending).mockReturnValue(entry)
+    vi.mocked(getPostBySlug).mockReturnValue(post)
+    vi.mocked(dist.prepareSocialDraft).mockResolvedValue({} as never)
+    const { POST } = await import('@/app/api/schedule/publish/route')
+    const res = await POST(makeRequest('secret-de-test-32-caracteres-min'))
+    expect((await res.json()).status).toBe('published_pending_approval')
+    expect(dist.prepareSocialDraft).toHaveBeenCalled()
+    expect(dist.generateAndDistribute).not.toHaveBeenCalled()
+    expect(markPublished).toHaveBeenCalled()
+  })
+
+  it('marque failed si la generation du brouillon echoue', async () => {
+    const { claimNextPending, markFailed, markPublished } = await import('@/lib/schedule')
+    const { getPostBySlug } = await import('@/lib/db')
+    const dist = await import('@/lib/agents/distribute')
+    vi.mocked(dist.isAutoPostEnabled).mockReturnValue(false)
+    vi.mocked(claimNextPending).mockReturnValue(entry)
+    vi.mocked(getPostBySlug).mockReturnValue(post)
+    vi.mocked(dist.prepareSocialDraft).mockRejectedValue(new Error('boom'))
     const { POST } = await import('@/app/api/schedule/publish/route')
     const res = await POST(makeRequest('secret-de-test-32-caracteres-min'))
     expect(res.status).toBe(502)
