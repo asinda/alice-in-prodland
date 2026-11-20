@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { connection } from 'next/server';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { getPost, renderMarkdown } from '../../../../lib/posts';
@@ -7,6 +8,8 @@ import { getPostBySlug } from '../../../../lib/db';
 import { getTranslation } from '../../../../lib/translations';
 import TableOfContents from '../../../../components/TableOfContents';
 import CopyCode from '../../../../components/CopyCode';
+import JsonLd from '../../../../components/JsonLd';
+import { SITE_URL } from '../../../../lib/site';
 import styles from '../../../../styles/Post.module.css';
 
 const TAG_COLORS: Record<string, string> = {
@@ -22,9 +25,39 @@ function tagColor(tag: string) { return TAG_COLORS[tag] ?? 'default'; }
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string; slug: string }> }
 ): Promise<Metadata> {
-  const { slug } = await params;
-  const post = await getPost(slug);
-  return { title: `${post.title} — alice-in-prodland`, description: post.excerpt };
+  const { locale, slug } = await params;
+  let post;
+  try { post = await getPost(slug); } catch { return {}; }
+
+  let title = post.title;
+  let description = post.excerpt;
+  if (locale === 'en') {
+    const fileTrans = getTranslation(slug);
+    const dbPost = getPostBySlug(slug);
+    if (fileTrans?.contentEn ?? dbPost?.contentEn) {
+      title = fileTrans?.titleEn ?? dbPost?.titleEn ?? title;
+      description = fileTrans?.excerptEn ?? dbPost?.excerptEn ?? description;
+    }
+  }
+
+  const path = `/blog/${slug}`;
+  return {
+    title: `${title} — alice-in-prodland`,
+    description,
+    alternates: {
+      canonical: `/${locale}${path}`,
+      languages: { fr: `/fr${path}`, en: `/en${path}`, 'x-default': `/fr${path}` },
+    },
+    openGraph: {
+      type: 'article',
+      title,
+      description,
+      publishedTime: post.date,
+      locale: locale === 'fr' ? 'fr_FR' : 'en_GB',
+      images: [`/api/og/${slug}`],
+    },
+    twitter: { card: 'summary_large_image', title, description, images: [`/api/og/${slug}`] },
+  };
 }
 
 export default async function BlogPost(
@@ -34,9 +67,12 @@ export default async function BlogPost(
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'blog' });
+  const tToc = await getTranslations({ locale, namespace: 'toc' });
+  const tCode = await getTranslations({ locale, namespace: 'code' });
 
   const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-GB';
-  const post = await getPost(slug);
+  let post;
+  try { post = await getPost(slug); } catch { notFound(); }
 
   // Use English translation if available and locale is EN
   let displayTitle = post.title;
@@ -72,7 +108,7 @@ export default async function BlogPost(
         <article>
           <header className={styles.header}>
             <div className={styles.meta}>
-              <time className={styles.date}>{formatDate(post.date)}</time>
+              <time className={styles.date} dateTime={post.date}>{formatDate(post.date)}</time>
               <span className={styles.separator}>·</span>
               <span className={styles.readTime}>{post.readTime} {t('readTime')}</span>
             </div>
@@ -94,12 +130,26 @@ export default async function BlogPost(
 
         {toc.length > 0 && (
           <aside className={styles.tocSidebar}>
-            <TableOfContents toc={toc} />
+            <TableOfContents toc={toc} title={tToc('title')} label={tToc('label')} />
           </aside>
         )}
       </div>
 
-      <CopyCode contentId="post-content" />
+      <CopyCode contentId="post-content" copyLabel={tCode('copy')} copiedLabel={tCode('copied')} ariaLabel={tCode('copyAria')} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: displayTitle,
+        description: displayExcerpt,
+        datePublished: post.date,
+        inLanguage: locale,
+        keywords: post.tags.join(', '),
+        image: `${SITE_URL}/api/og/${slug}`,
+        url: `${SITE_URL}/${locale}/blog/${slug}`,
+        mainEntityOfPage: `${SITE_URL}/${locale}/blog/${slug}`,
+        author: { '@type': 'Person', name: 'Alice Sindayigaya' },
+        publisher: { '@type': 'Person', name: 'Alice Sindayigaya' },
+      }} />
 
       <div className={styles.footer}>
         <Link href={`/${locale}/blog`} className={styles.backBtn}>{t('backAll')}</Link>

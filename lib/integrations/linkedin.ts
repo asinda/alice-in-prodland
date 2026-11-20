@@ -51,6 +51,7 @@ export async function postToLinkedIn(payload: LinkedInPayload): Promise<Integrat
   try {
     const res = await fetch('https://api.linkedin.com/v2/ugcPosts', {
       method: 'POST',
+      signal: AbortSignal.timeout(15_000),
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'X-Restli-Protocol-Version': '2.0.0',

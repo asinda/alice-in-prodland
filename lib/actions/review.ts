@@ -1,18 +1,23 @@
 // lib/actions/review.ts
 'use server'
+
+import { requireAdmin } from '../require-admin';
 import { revalidatePath } from 'next/cache'
 import { getContentStatus, setContentStatus } from '../content-status'
 import { improvePost } from '../agents/improve'
 import { getFsPostRaw } from '../posts'
 import { getPostBySlug, updatePost } from '../db'
 import type { ImproveOutput } from '../agents/improve'
+import { reviewTechnical, type TechReviewOutput } from '../agents/techreview'
 
 export async function actionMarkReady(slug: string): Promise<void> {
+  await requireAdmin();
   setContentStatus(slug, { status: 'ready', reviewedAt: new Date().toISOString() })
   revalidatePath('/admin/review')
 }
 
 export async function actionImproveWithAI(slug: string): Promise<ImproveOutput> {
+  await requireAdmin();
   // Use getPostBySlug for DB posts (works for drafts), getFsPostRaw for FS-only posts
   const dbPost = getPostBySlug(slug)
   const fsPost = !dbPost ? getFsPostRaw(slug) : null
@@ -34,6 +39,7 @@ export async function actionImproveWithAI(slug: string): Promise<ImproveOutput> 
 }
 
 export async function actionAcceptImprovement(slug: string): Promise<void> {
+  await requireAdmin();
   const status = getContentStatus(slug)
   if (!status.aiImprovedTitle) return
   const dbPost = getPostBySlug(slug)
@@ -46,4 +52,19 @@ export async function actionAcceptImprovement(slug: string): Promise<void> {
   }
   setContentStatus(slug, { status: 'ready', reviewedAt: new Date().toISOString() })
   revalidatePath('/admin/review')
+}
+
+export async function actionTechReview(slug: string): Promise<{ result?: TechReviewOutput; error?: string }> {
+  await requireAdmin();
+  const dbPost = getPostBySlug(slug)
+  const fsPost = !dbPost ? getFsPostRaw(slug) : null
+  const title = dbPost?.title ?? fsPost?.title
+  const content = dbPost?.content ?? fsPost?.content
+  if (!title || !content) return { error: 'Article introuvable' }
+  try {
+    return { result: await reviewTechnical({ title, content }) }
+  } catch (e) {
+    console.error('[techreview]', slug, e)
+    return { error: 'La relecture a échoué' }
+  }
 }

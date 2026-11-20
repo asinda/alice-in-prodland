@@ -1,5 +1,5 @@
-import fs from 'fs';
 import path from 'path';
+import { readJsonFile, writeJsonFile } from './jsonStore';
 
 const dataDir = path.join(process.cwd(), 'data');
 
@@ -85,13 +85,11 @@ function now(): string {
 }
 
 function readJson<T>(file: string): T[] {
-  const p = path.join(dataDir, file);
-  if (!fs.existsSync(p)) return [];
-  return JSON.parse(fs.readFileSync(p, 'utf8')) as T[];
+  return readJsonFile<T[]>(path.join(dataDir, file), []);
 }
 
 function writeJson<T>(file: string, data: T[]): void {
-  fs.writeFileSync(path.join(dataDir, file), JSON.stringify(data, null, 2));
+  writeJsonFile(path.join(dataDir, file), data);
 }
 
 // ─── Posts ───────────────────────────────────────────────────────────────────
@@ -203,10 +201,12 @@ export function updateLesson(courseId: string, lessonId: string, data: Partial<O
   if (ci === -1) throw new Error(`Course ${courseId} not found`);
   const li = courses[ci].lessons.findIndex(l => l.id === lessonId);
   if (li === -1) throw new Error(`Lesson ${lessonId} not found`);
-  courses[ci].lessons[li] = { ...courses[ci].lessons[li], ...data };
+  const updated: DbLesson = { ...courses[ci].lessons[li], ...data };
+  courses[ci].lessons[li] = updated;
+  courses[ci].lessons.sort((a, b) => a.order - b.order);
   courses[ci].updatedAt = now();
   writeJson('courses.json', courses);
-  return courses[ci].lessons[li];
+  return updated;
 }
 
 export function deleteLesson(courseId: string, lessonId: string): void {

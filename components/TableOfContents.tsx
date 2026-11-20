@@ -1,12 +1,12 @@
 import type { TocEntry } from '../lib/posts';
 import styles from '../styles/Post.module.css';
 
-export default function TableOfContents({ toc }: { toc: TocEntry[] }) {
+export default function TableOfContents({ toc, title, label }: { toc: TocEntry[]; title: string; label: string }) {
   if (toc.length === 0) return null;
 
   return (
-    <nav className={styles.toc}>
-      <p className={styles.tocTitle}>Table des matières</p>
+    <nav className={styles.toc} aria-label={label}>
+      <p className={styles.tocTitle}>{title}</p>
       <ul className={styles.tocList}>
         {toc.map(entry => (
           <li key={entry.id} className={styles.tocItem} data-level={entry.level}>

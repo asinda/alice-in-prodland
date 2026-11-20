@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '../require-admin';
+
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import {
@@ -32,6 +34,7 @@ async function pushIntegrations(course: NonNullable<ReturnType<typeof getCourseB
 }
 
 export async function actionCreateCourse(_: unknown, formData: FormData) {
+  await requireAdmin();
   const title = (formData.get('title') as string).trim();
   const description = (formData.get('description') as string).trim();
   const tagsRaw = (formData.get('tags') as string).trim();
@@ -54,6 +57,7 @@ export async function actionCreateCourse(_: unknown, formData: FormData) {
 }
 
 export async function actionUpdateCourse(_: unknown, formData: FormData) {
+  await requireAdmin();
   const id = formData.get('id') as string;
   const title = (formData.get('title') as string).trim();
   const description = (formData.get('description') as string).trim();
@@ -69,6 +73,7 @@ export async function actionUpdateCourse(_: unknown, formData: FormData) {
 }
 
 export async function actionPublishCourse(id: string) {
+  await requireAdmin();
   const course = getCourseById(id);
   if (!course) return;
   publishCourse(id);
@@ -79,6 +84,7 @@ export async function actionPublishCourse(id: string) {
 }
 
 export async function actionRepushCourseIntegrations(id: string) {
+  await requireAdmin();
   const course = getCourseById(id);
   if (!course || course.status !== 'published') return;
   await pushIntegrations(course);
@@ -87,12 +93,14 @@ export async function actionRepushCourseIntegrations(id: string) {
 }
 
 export async function actionDeleteCourse(id: string) {
+  await requireAdmin();
   deleteCourse(id);
   revalidatePath('/admin/cours');
   redirect('/admin/cours');
 }
 
 export async function actionAddLesson(_: unknown, formData: FormData) {
+  await requireAdmin();
   const courseId = formData.get('courseId') as string;
   const title = (formData.get('title') as string).trim();
   const content = (formData.get('content') as string).trim();
@@ -106,6 +114,7 @@ export async function actionAddLesson(_: unknown, formData: FormData) {
 }
 
 export async function actionUpdateLesson(_: unknown, formData: FormData) {
+  await requireAdmin();
   const courseId = formData.get('courseId') as string;
   const lessonId = formData.get('lessonId') as string;
   const title = (formData.get('title') as string).trim();
@@ -119,6 +128,7 @@ export async function actionUpdateLesson(_: unknown, formData: FormData) {
 }
 
 export async function actionDeleteLesson(courseId: string, lessonId: string) {
+  await requireAdmin();
   deleteLesson(courseId, lessonId);
   revalidatePath(`/admin/cours/${courseId}`);
 }

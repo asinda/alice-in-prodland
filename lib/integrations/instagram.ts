@@ -19,6 +19,7 @@ export async function postToInstagram(payload: InstagramPayload): Promise<Integr
       `https://graph.facebook.com/v19.0/${accountId}/media`,
       {
         method: 'POST',
+        signal: AbortSignal.timeout(15_000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image_url: payload.imageUrl,
@@ -37,6 +38,7 @@ export async function postToInstagram(payload: InstagramPayload): Promise<Integr
       `https://graph.facebook.com/v19.0/${accountId}/media_publish`,
       {
         method: 'POST',
+        signal: AbortSignal.timeout(15_000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ creation_id: creationId, access_token: accessToken }),
       }
