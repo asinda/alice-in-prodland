@@ -8,6 +8,8 @@ import { getPostBySlug } from '../../../../lib/db';
 import { getTranslation } from '../../../../lib/translations';
 import TableOfContents from '../../../../components/TableOfContents';
 import CopyCode from '../../../../components/CopyCode';
+import JsonLd from '../../../../components/JsonLd';
+import { SITE_URL } from '../../../../lib/site';
 import styles from '../../../../styles/Post.module.css';
 
 const TAG_COLORS: Record<string, string> = {
@@ -65,6 +67,8 @@ export default async function BlogPost(
   const { locale, slug } = await params;
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'blog' });
+  const tToc = await getTranslations({ locale, namespace: 'toc' });
+  const tCode = await getTranslations({ locale, namespace: 'code' });
 
   const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-GB';
   let post;
@@ -104,7 +108,7 @@ export default async function BlogPost(
         <article>
           <header className={styles.header}>
             <div className={styles.meta}>
-              <time className={styles.date}>{formatDate(post.date)}</time>
+              <time className={styles.date} dateTime={post.date}>{formatDate(post.date)}</time>
               <span className={styles.separator}>·</span>
               <span className={styles.readTime}>{post.readTime} {t('readTime')}</span>
             </div>
@@ -126,12 +130,26 @@ export default async function BlogPost(
 
         {toc.length > 0 && (
           <aside className={styles.tocSidebar}>
-            <TableOfContents toc={toc} />
+            <TableOfContents toc={toc} title={tToc('title')} label={tToc('label')} />
           </aside>
         )}
       </div>
 
-      <CopyCode contentId="post-content" />
+      <CopyCode contentId="post-content" copyLabel={tCode('copy')} copiedLabel={tCode('copied')} ariaLabel={tCode('copyAria')} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: displayTitle,
+        description: displayExcerpt,
+        datePublished: post.date,
+        inLanguage: locale,
+        keywords: post.tags.join(', '),
+        image: `${SITE_URL}/api/og/${slug}`,
+        url: `${SITE_URL}/${locale}/blog/${slug}`,
+        mainEntityOfPage: `${SITE_URL}/${locale}/blog/${slug}`,
+        author: { '@type': 'Person', name: 'Alice Sindayigaya' },
+        publisher: { '@type': 'Person', name: 'Alice Sindayigaya' },
+      }} />
 
       <div className={styles.footer}>
         <Link href={`/${locale}/blog`} className={styles.backBtn}>{t('backAll')}</Link>

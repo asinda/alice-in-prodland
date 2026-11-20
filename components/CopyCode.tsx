@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-export default function CopyCode({ contentId }: { contentId: string }) {
+export default function CopyCode({ contentId, copyLabel, copiedLabel, ariaLabel }: { contentId: string; copyLabel: string; copiedLabel: string; ariaLabel: string }) {
   useEffect(() => {
     const container = document.getElementById(contentId);
     if (!container) return;
@@ -14,16 +14,18 @@ export default function CopyCode({ contentId }: { contentId: string }) {
 
       const btn = document.createElement('button');
       btn.className = 'copy-btn';
-      btn.textContent = 'Copy';
+      btn.textContent = copyLabel;
+      btn.type = 'button';
+      btn.setAttribute('aria-label', ariaLabel);
       pre.appendChild(btn);
 
       const handler = () => {
         const code = pre.querySelector('code');
         navigator.clipboard.writeText(code?.textContent ?? '').then(() => {
-          btn.textContent = '✓ Copied';
+          btn.textContent = copiedLabel;
           btn.classList.add('copied');
           setTimeout(() => {
-            btn.textContent = 'Copy';
+            btn.textContent = copyLabel;
             btn.classList.remove('copied');
           }, 2000);
         });
@@ -37,7 +39,7 @@ export default function CopyCode({ contentId }: { contentId: string }) {
     });
 
     return () => cleanups.forEach(c => c());
-  }, [contentId]);
+  }, [contentId, copyLabel, copiedLabel, ariaLabel]);
 
   return null;
 }
