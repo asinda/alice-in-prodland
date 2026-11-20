@@ -17,7 +17,8 @@
     "recent": "Recent posts",
     "readMore": "Read article →",
     "viewAll": "View all posts →",
-    "readTime": "min read"
+    "readTime": "min read",
+    "h1": "alice-in-prodland: SRE / DevOps blog"
   },
   "blog": {
     "title": "blog",
@@ -41,6 +42,23 @@
     "built": "Built with",
     "heart": "♥",
     "and": "and too many",
-    "sessions": "kubectl debug sessions"
+    "sessions": "kubectl debug sessions",
+    "legal": "Legal notice",
+    "privacy": "Privacy"
+  },
+  "a11y": {
+    "skip": "Skip to content",
+    "langLabel": "Switch language",
+    "mainNav": "Main navigation",
+    "newTab": "(opens in a new tab)"
+  },
+  "toc": {
+    "title": "Table of contents",
+    "label": "Article contents"
+  },
+  "code": {
+    "copy": "Copy",
+    "copied": "✓ Copied",
+    "copyAria": "Copy code"
   }
 }

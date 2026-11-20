@@ -15,6 +15,7 @@ export default async function About({ params }: { params: Promise<{ locale: stri
 
   return (
     <div className={styles.page}>
+      <h1 className="sr-only">{isFr ? 'À propos' : 'About'}</h1>
       <div className={styles.terminal}>
         <div className={styles.terminalBar}>
           <span className={styles.dot} data-color="red" />

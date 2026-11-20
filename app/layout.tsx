@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { SITE_URL } from '../lib/site';
+import '@fontsource-variable/jetbrains-mono';
 import '../styles/globals.css';
 import 'highlight.js/styles/github-dark.css';
 
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
       { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: '32x32' },
     ],
-    apple: '/apple-touch-icon.svg',
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
 };
 
