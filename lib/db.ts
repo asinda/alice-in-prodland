@@ -201,10 +201,12 @@ export function updateLesson(courseId: string, lessonId: string, data: Partial<O
   if (ci === -1) throw new Error(`Course ${courseId} not found`);
   const li = courses[ci].lessons.findIndex(l => l.id === lessonId);
   if (li === -1) throw new Error(`Lesson ${lessonId} not found`);
-  courses[ci].lessons[li] = { ...courses[ci].lessons[li], ...data };
+  const updated: DbLesson = { ...courses[ci].lessons[li], ...data };
+  courses[ci].lessons[li] = updated;
+  courses[ci].lessons.sort((a, b) => a.order - b.order);
   courses[ci].updatedAt = now();
   writeJson('courses.json', courses);
-  return courses[ci].lessons[li];
+  return updated;
 }
 
 export function deleteLesson(courseId: string, lessonId: string): void {
