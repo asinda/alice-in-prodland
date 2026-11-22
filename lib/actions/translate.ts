@@ -1,7 +1,9 @@
 'use server';
 
+import { requireAdmin } from '../require-admin';
+
 import { revalidatePath } from 'next/cache';
-import { getPosts, updatePost, getPostById } from '../db';
+import { getPosts, updatePost } from '../db';
 import { getAllAdminPosts, getFsPostRaw } from '../posts';
 import { translatePost } from '../agents/translate';
 import { setTranslation, getAllTranslations } from '../translations';
@@ -13,6 +15,7 @@ export interface TranslateAllResult {
 }
 
 export async function actionTranslateAll(): Promise<TranslateAllResult> {
+  await requireAdmin();
   const done: string[] = [];
   const skipped: string[] = [];
   const errors: { slug: string; error: string }[] = [];
@@ -31,7 +34,8 @@ export async function actionTranslateAll(): Promise<TranslateAllResult> {
       updatePost(post.id, { titleEn: result.title, excerptEn: result.excerpt, contentEn: result.content });
       done.push(post.slug);
     } catch (e) {
-      errors.push({ slug: post.slug, error: String(e) });
+      console.error('[translate]', post.slug, e);
+      errors.push({ slug: post.slug, error: 'Échec de la traduction' });
     }
   }
 
@@ -51,7 +55,8 @@ export async function actionTranslateAll(): Promise<TranslateAllResult> {
       setTranslation(fsMeta.slug, { titleEn: result.title, excerptEn: result.excerpt, contentEn: result.content });
       done.push(fsMeta.slug);
     } catch (e) {
-      errors.push({ slug: fsMeta.slug, error: String(e) });
+      console.error('[translate]', fsMeta.slug, e);
+      errors.push({ slug: fsMeta.slug, error: 'Échec de la traduction' });
     }
   }
 
@@ -61,6 +66,7 @@ export async function actionTranslateAll(): Promise<TranslateAllResult> {
 }
 
 export async function actionTranslateOne(slug: string, source: 'fs' | 'db'): Promise<{ error?: string }> {
+  await requireAdmin();
   try {
     if (source === 'db') {
       const dbPost = getPosts().find(p => p.slug === slug);
@@ -83,6 +89,7 @@ export async function actionTranslateOne(slug: string, source: 'fs' | 'db'): Pro
     revalidatePath('/admin/translate');
     return {};
   } catch (e) {
-    return { error: String(e) };
+    console.error('[translate]', slug, e);
+    return { error: 'Échec de la traduction' };
   }
 }

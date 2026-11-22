@@ -1,7 +1,8 @@
 // app/admin/review/ReviewClient.tsx
 'use client'
-import { useTransition } from 'react'
-import { actionMarkReady, actionImproveWithAI, actionAcceptImprovement } from '@/lib/actions/review'
+import { useState, useTransition } from 'react'
+import { actionMarkReady, actionImproveWithAI, actionAcceptImprovement, actionTechReview } from '@/lib/actions/review'
+import type { TechReviewOutput } from '@/lib/agents/techreview'
 import type { AdminPostRow } from '@/lib/posts'
 import type { ContentStatus } from '@/lib/content-status'
 
@@ -10,6 +11,8 @@ type PostWithStatus = AdminPostRow & { contentStatus: ContentStatus }
 function PostRow({ post }: { post: PostWithStatus }) {
   const [isPending, startTransition] = useTransition()
   const hasAI = !!post.contentStatus.aiImprovedTitle
+  const [review, setReview] = useState<TechReviewOutput | null>(null)
+  const [reviewError, setReviewError] = useState<string | null>(null)
 
   return (
     <div style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', marginBottom: '0.75rem' }}>
@@ -26,10 +29,22 @@ function PostRow({ post }: { post: PostWithStatus }) {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+          <button
+            disabled={isPending}
+            onClick={() => startTransition(async () => {
+              setReviewError(null)
+              const r = await actionTechReview(post.slug)
+              if (r.error) setReviewError(r.error)
+              else setReview(r.result ?? null)
+            })}
+            style={{ background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontSize: '0.85rem' }}
+          >
+            {isPending ? '...' : '🔍 Relecture'}
+          </button>
           {!hasAI && (
             <button
               disabled={isPending}
-              onClick={() => startTransition(() => actionImproveWithAI(post.slug))}
+              onClick={() => startTransition(async () => { await actionImproveWithAI(post.slug) })}
               style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.4rem 0.8rem', cursor: 'pointer', fontSize: '0.85rem' }}
             >
               {isPending ? '...' : '✦ IA'}
@@ -51,6 +66,25 @@ function PostRow({ post }: { post: PostWithStatus }) {
           </button>
         </div>
       </div>
+      {reviewError && <p role="alert" style={{ color: '#f87171', marginTop: '0.75rem' }}>{reviewError}</p>}
+      {review && (
+        <div style={{ marginTop: '0.75rem', borderTop: '1px solid #334155', paddingTop: '0.75rem' }}>
+          <p style={{ color: '#cbd5e1', margin: '0 0 0.5rem' }}>{review.summary}</p>
+          {review.findings.length === 0 && <p style={{ color: '#22c55e', margin: 0 }}>Aucun problème détecté.</p>}
+          {review.findings.map((f, i) => (
+            <div key={i} style={{ marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+              <span style={{ color: f.severity === 'erreur' ? '#f87171' : f.severity === 'risque' ? '#fbbf24' : '#94a3b8', fontWeight: 'bold' }}>
+                [{f.severity}]
+              </span>{' '}
+              <span style={{ color: '#94a3b8' }}>{f.line ? `ligne ${f.line} · ` : ''}</span>
+              <span style={{ color: '#e2e8f0' }}>{f.problem}</span>
+              <div style={{ color: '#64748b' }}>« {f.excerpt} »</div>
+              <div style={{ color: '#38bdf8' }}>→ {f.suggestion}</div>
+            </div>
+          ))}
+          <p style={{ color: '#475569', fontSize: '0.75rem', margin: 0 }}>Suggestions de l&apos;IA : à vérifier avant toute modification.</p>
+        </div>
+      )}
     </div>
   )
 }

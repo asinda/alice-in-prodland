@@ -39,6 +39,7 @@ export default async function LocaleLayout({
 
   const t = await getTranslations({ locale, namespace: 'nav' });
   const tFooter = await getTranslations({ locale, namespace: 'footer' });
+  const tA11y = await getTranslations({ locale, namespace: 'a11y' });
 
   return (
     <NextIntlClientProvider locale={locale}>
@@ -49,14 +50,15 @@ export default async function LocaleLayout({
           strategy="afterInteractive"
         />
       )}
+      <a href="#main" className="skip-link">{tA11y('skip')}</a>
       <ReadingProgress />
       <div className={styles.shell}>
         <header className={styles.header}>
-          <nav className={styles.nav}>
+          <nav className={styles.nav} aria-label={tA11y('mainNav')}>
             <Link href={`/${locale}`} className={styles.brand}>
               <span className={styles.prompt}>$</span>
               <span className={styles.brandName}>alice-in-prodland</span>
-              <span className={styles.cursor}>▌</span>
+              <span className={styles.cursor} aria-hidden="true">▌</span>
             </Link>
             <div className={styles.links}>
               <Link href={`/${locale}/blog`} className={styles.navLink}>{t('blog')}</Link>
@@ -68,14 +70,15 @@ export default async function LocaleLayout({
                 rel="noopener noreferrer"
                 className={styles.navLink}
               >
-                {t('github')} ↗
+                {t('github')} <span aria-hidden="true">↗</span>
+                <span className="sr-only"> {tA11y('newTab')}</span>
               </a>
-              <LanguageSwitcher currentLocale={locale} />
+              <LanguageSwitcher currentLocale={locale} ariaLabel={tA11y('langLabel')} />
             </div>
           </nav>
         </header>
 
-        <main className={styles.main}>{children}</main>
+        <main id="main" className={styles.main}>{children}</main>
 
         <footer className={styles.footer}>
           <div className={styles.footerInner}>
@@ -84,7 +87,9 @@ export default async function LocaleLayout({
               {tFooter('and')} <code>kubectl debug</code> {tFooter('sessions')}
             </span>
             <span className={styles.footerText}>
-              © <FooterYear /> alice-in-prodland
+              © <FooterYear /> alice-in-prodland ·{' '}
+              <Link href={`/${locale}/legal`}>{tFooter('legal')}</Link> ·{' '}
+              <Link href={`/${locale}/privacy`}>{tFooter('privacy')}</Link>
             </span>
           </div>
         </footer>

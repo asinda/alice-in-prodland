@@ -9,6 +9,7 @@ interface PostRow {
   title: string;
   source: 'fs' | 'db';
   hasEn: boolean;
+  issues: string[];
 }
 
 export default function TranslateClient({ posts }: { posts: PostRow[] }) {
@@ -66,6 +67,7 @@ export default function TranslateClient({ posts }: { posts: PostRow[] }) {
             <th>Titre</th>
             <th>Source</th>
             <th>EN</th>
+            <th>Cohérence</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -83,6 +85,13 @@ export default function TranslateClient({ posts }: { posts: PostRow[] }) {
                   ? <span className={`${styles.badge} ${styles.badgePublished}`}>✓ EN</span>
                   : <span className={`${styles.badge} ${styles.badgeDraft}`}>— FR only</span>
                 }
+              </td>
+              <td style={{ fontSize: '0.75rem', maxWidth: 260 }}>
+                {!post.hasEn ? '' : post.issues.length === 0
+                  ? <span style={{ color: 'var(--accent-green)' }}>✓ OK</span>
+                  : <ul style={{ margin: 0, paddingLeft: '1rem', color: 'var(--text-muted)' }}>
+                      {post.issues.map((m, i) => <li key={i}>{m}</li>)}
+                    </ul>}
               </td>
               <td>
                 {singleMsg[post.slug] ? (

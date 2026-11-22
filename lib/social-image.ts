@@ -3,13 +3,14 @@ import { Resvg } from '@resvg/resvg-js'
 import satori from 'satori'
 import fs from 'fs'
 import path from 'path'
+import type { ReactNode } from 'react'
 
 export async function generateSocialImage(post: {
   title: string
   tags: string[]
 }): Promise<Buffer> {
   const svg = await satori(
-    {
+    ({
       type: 'div',
       props: {
         style: {
@@ -51,7 +52,7 @@ export async function generateSocialImage(post: {
           },
         ],
       },
-    },
+    }) as unknown as ReactNode,
     { width: 1200, height: 630, fonts: [] }
   )
 

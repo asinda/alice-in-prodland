@@ -1,16 +1,16 @@
 // app/api/schedule/publish/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'node:crypto'
-import { getNextPending, markPublished, markFailed } from '@/lib/schedule'
+import { claimNextPending, markPublished, markFailed } from '@/lib/schedule'
 import { setContentStatus } from '@/lib/content-status'
 import { getPostBySlug, publishPost, createPost } from '@/lib/db'
 import { getFsPostRaw } from '@/lib/posts'
-import { generateAndDistribute } from '@/lib/agents/distribute'
+import { generateAndDistribute, prepareSocialDraft, isAutoPostEnabled } from '@/lib/agents/distribute'
 
 function verifyToken(req: NextRequest): boolean {
   const secret = process.env.PUBLISH_SECRET
   if (!secret) return false
-  const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '')
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer /, '')
   try {
     return timingSafeEqual(Buffer.from(token), Buffer.from(secret))
   } catch {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const entry = getNextPending()
+  const entry = claimNextPending()
   if (!entry) return NextResponse.json({ status: 'no_pending' })
 
   try {
@@ -40,9 +40,28 @@ export async function POST(req: NextRequest) {
 
     if (!post) throw new Error(`Post introuvable : ${entry.slug}`)
 
-    publishPost(post.id)
+    // Ne pas republier (ni changer publishedAt) si le post l'est déjà (reprise après échec partiel)
+    if (post.status !== 'published') publishPost(post.id)
     const published = getPostBySlug(entry.slug)!
-    await generateAndDistribute(published)
+    if (!isAutoPostEnabled()) {
+      // Validation humaine : on prépare un brouillon, rien n'est posté avant approbation dans /admin/social
+      try {
+        await prepareSocialDraft(published)
+      } catch (e) {
+        console.error('[publish-webhook] Draft generation failed:', e)
+        markFailed(entry.id, 'Génération du brouillon social en échec (post publié)')
+        return NextResponse.json({ status: 'published_draft_failed', slug: entry.slug }, { status: 502 })
+      }
+      markPublished(entry.id)
+      return NextResponse.json({ status: 'published_pending_approval', slug: entry.slug })
+    }
+
+    const dist = await generateAndDistribute(published)
+
+    if (dist?.failed) {
+      markFailed(entry.id, 'Distribution sociale en échec (post publié, relancer depuis admin)')
+      return NextResponse.json({ status: 'published_distribution_failed', slug: entry.slug }, { status: 502 })
+    }
 
     markPublished(entry.id)
     setContentStatus(entry.slug, { status: 'distributed' })

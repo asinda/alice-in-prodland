@@ -1,40 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Alice in Prodland
 
-## Getting Started
+Blog SRE / DevOps bilingue (FR/EN) avec CMS d'administration, cours en ligne et publication automatisée sur les réseaux sociaux.
 
-First, run the development server:
+![CI](https://github.com/OWNER/alice-in-prodland/actions/workflows/ci.yml/badge.svg)
+
+## Fonctionnalités
+
+- **Blog** : articles Markdown (fichiers `posts/`) et articles créés via l'admin (`data/posts.json`), rendu GFM + coloration syntaxique, table des matières, barre de progression.
+- **Cours** : cours structurés en leçons avec navigation précédent/suivant.
+- **i18n** : français (défaut) et anglais via `next-intl`, traduction assistée par IA.
+- **Admin** (`/admin`) : CRUD articles/cours, import de notes Obsidian, relecture IA, planification, statistiques.
+- **Diffusion** : LinkedIn, Instagram, YouTube, TikTok (légende), Gumroad ; image Open Graph générée (`/api/og/[slug]`).
+- **Publication planifiée** : workflow GitHub Actions (lun/mer/ven) appelant `POST /api/schedule/publish`.
+- **Mode maintenance** : `MAINTENANCE_MODE=true` avec cookie de prévisualisation.
+
+## Stack
+
+Next.js 16 (App Router) · React 19 · TypeScript · next-intl · remark/rehype · jose (JWT) · Anthropic SDK · Vitest · Docker (Node 22 Alpine, `output: standalone`).
+
+## Démarrage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # puis renseigner les variables
+npm ci
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Commande | Rôle |
+|---|---|
+| `npm run dev` | Serveur de développement |
+| `npm run build` / `npm start` | Build et serveur de production |
+| `npm run lint` | ESLint |
+| `npx tsc --noEmit` | Vérification des types |
+| `npm test` | Tests unitaires (Vitest) |
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+> Sous Windows, lancez les commandes depuis un chemin à la casse exacte du lecteur (`C:\…`) : un `c:\…` en minuscule provoque une double instance de Vitest.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Variables d'environnement
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+Voir [.env.example](.env.example). `JWT_SECRET` et `ADMIN_PASSWORD` sont obligatoires en production.
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Architecture
 
-## Learn More
+```
+app/[locale]/   pages publiques (blog, cours, about)
+app/admin/      CMS (hors i18n, protégé par JWT)
+app/api/        og (image sociale), schedule/publish (webhook)
+lib/            posts, db (JSON), agents IA, intégrations, actions serveur
+posts/          articles Markdown versionnés
+data/           base JSON (posts, cours, planning, traductions)
+messages/       traductions de l'interface
+```
 
-To learn more about Next.js, take a look at the following resources:
+Les articles viennent de deux sources fusionnées dans `lib/posts.ts` ; en cas de conflit de slug, l'article de la base JSON l'emporte. Détails : [CLAUDE.md](CLAUDE.md) et [docs/bilingual-fr-en.md](docs/bilingual-fr-en.md).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+## Déploiement
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Image Docker multi-stage (utilisateur non-root). Monter `/app/data` comme volume persistant : `docker-entrypoint.sh` y copie les données initiales de `data-seed/` si le volume est vide. Hébergé sur Render.com ; renseigner `NEXT_PUBLIC_SITE_URL` pour que les redirections n'exposent pas le port interne.
 
-## Deploy on Vercel
+## CI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+`.github/workflows/ci.yml` : lint, types, tests et build à chaque push / PR. `publish.yml` : publication planifiée.

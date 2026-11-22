@@ -2,14 +2,11 @@ import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { jwtVerify } from 'jose';
+import { verifyAdminToken } from './lib/auth';
 import { isMaintenanceOn, maintenanceHtml } from './lib/maintenance';
+import { previewCookieValue, safeEqual } from './lib/preview';
 
 const intlMiddleware = createMiddleware(routing);
-
-const secret = () => new TextEncoder().encode(
-  process.env.JWT_SECRET ?? 'fallback-dev-secret-change-in-prod'
-);
 
 const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://alice-in-prodland.onrender.com').replace(/\/$/, '');
 
@@ -20,24 +17,24 @@ export default async function middleware(request: NextRequest) {
     if (pathname === '/admin/login') return NextResponse.next();
     const token = request.cookies.get('admin-token')?.value;
     if (!token) return NextResponse.redirect(`${SITE_URL}/admin/login`);
-    try {
-      await jwtVerify(token, secret());
-      return NextResponse.next();
-    } catch {
-      return NextResponse.redirect(`${SITE_URL}/admin/login`);
-    }
+    if (await verifyAdminToken(token)) return NextResponse.next();
+    return NextResponse.redirect(`${SITE_URL}/admin/login`);
   }
+
+  // Les routes API (webhook de publication, health, og) ne sont ni localisées ni en maintenance
+  if (pathname.startsWith('/api/')) return NextResponse.next();
 
   if (isMaintenanceOn()) {
     const previewSecret = process.env.PREVIEW_SECRET;
     const queryKey = request.nextUrl.searchParams.get('preview');
-    const hasCookie = !!previewSecret && request.cookies.get('preview-token')?.value === previewSecret;
+    const cookieValue = request.cookies.get('preview-token')?.value;
+    const hasCookie = !!previewSecret && !!cookieValue && await safeEqual(cookieValue, await previewCookieValue(previewSecret));
 
-    if (previewSecret && queryKey === previewSecret) {
+    if (previewSecret && queryKey && await safeEqual(queryKey, previewSecret)) {
       const url = request.nextUrl.clone();
       url.searchParams.delete('preview');
       const res = NextResponse.redirect(SITE_URL + url.pathname + url.search);
-      res.cookies.set('preview-token', previewSecret, { httpOnly: true, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
+      res.cookies.set('preview-token', await previewCookieValue(previewSecret), { httpOnly: true, sameSite: 'lax', secure: true, path: '/', maxAge: 60 * 60 * 24 * 7 });
       return res;
     }
 

@@ -11,6 +11,7 @@ import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import rehypeSanitize from 'rehype-sanitize';
 import styles from '../../../../../styles/Cours.module.css';
 
 export async function generateMetadata(
@@ -55,10 +56,11 @@ export default async function LessonPage(
     await unified()
       .use(remarkParse)
       .use(remarkGfm)
-      .use(remarkRehype, { allowDangerousHtml: true })
+      .use(remarkRehype)
+  .use(rehypeSanitize)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .use(rehypeHighlight, { ignoreMissing: true } as any)
-      .use(rehypeStringify, { allowDangerousHtml: true })
+      .use(rehypeStringify)
       .process(contentSource)
   );
 

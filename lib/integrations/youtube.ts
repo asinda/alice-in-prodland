@@ -14,6 +14,7 @@ export async function postYoutubeCommunity(payload: { text: string }): Promise<I
       `https://www.googleapis.com/youtube/v3/communityPosts?part=snippet&key=${apiKey}`,
       {
         method: 'POST',
+        signal: AbortSignal.timeout(15_000),
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           snippet: { channelId, type: 'text', textOriginal: payload.text },

@@ -42,6 +42,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
 
   return (
     <>
+      <h1 className="sr-only">{t('h1')}</h1>
       <section className={styles.hero}>
         <div className={styles.heroTerminal}>
           <div className={styles.terminalBar}>
@@ -107,7 +108,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <Link key={post.slug} href={`/${locale}/blog/${post.slug}`} className={styles.postCard}>
                 <div className={styles.postMeta}>
                   <span className={styles.postDate}>{formatDate(post.date)}</span>
-                  <span className={styles.readTime}>{post.readTime} min</span>
+                  <span className={styles.readTime}>{post.readTime} {t('readTime')}</span>
                 </div>
                 <h3 className={styles.postTitle}>{post.title}</h3>
                 <p className={styles.postExcerpt}>{post.excerpt}</p>

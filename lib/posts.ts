@@ -8,6 +8,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import rehypeSanitize from 'rehype-sanitize';
 import { getPosts, getPostBySlug as getDbPostBySlug, type ContentType, type Status, type Integrations } from './db';
 
 const postsDir = path.join(process.cwd(), 'posts', 'fr');
@@ -39,11 +40,12 @@ const _fsPostCache = new Map<string, Post>();
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
-  .use(remarkRehype, { allowDangerousHtml: true })
+  .use(remarkRehype)
+  .use(rehypeSanitize)
   .use(rehypeSlug)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   .use(rehypeHighlight, { ignoreMissing: true } as any)
-  .use(rehypeStringify, { allowDangerousHtml: true });
+  .use(rehypeStringify);
 
 export async function renderMarkdown(content: string): Promise<{ contentHtml: string; toc: TocEntry[] }> {
   const result = await processor.process(content);
@@ -124,7 +126,13 @@ export interface AdminPostRow {
   createdAt?: string;
 }
 
+/** Slug sûr pour un chemin de fichier : pas de séparateur ni de `..`. */
+export function isSafeSlug(slug: string): boolean {
+  return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(slug);
+}
+
 export function getFsPostRaw(slug: string): { title: string; excerpt: string; content: string; tags: string[]; date: string } | null {
+  if (!isSafeSlug(slug)) return null;
   const filePath = path.join(postsDir, `${slug}.md`);
   if (!fs.existsSync(filePath)) return null;
   const raw = fs.readFileSync(filePath, 'utf8');
@@ -171,6 +179,12 @@ export function getAllAdminPosts(): AdminPostRow[] {
   return [...dbRows, ...fsRows].sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
+export class PostNotFoundError extends Error {
+  constructor(slug: string) {
+    super(`Post introuvable : ${slug}`);
+  }
+}
+
 export async function getPost(slug: string): Promise<Post> {
   // DB takes precedence — always fresh, no cache
   const dbPost = getDbPostBySlug(slug);
@@ -194,6 +208,9 @@ export async function getPost(slug: string): Promise<Post> {
   const cached = _fsPostCache.get(slug);
   if (cached) return cached;
 
+  if (!isSafeSlug(slug) || !fs.existsSync(path.join(postsDir, `${slug}.md`))) {
+    throw new PostNotFoundError(slug);
+  }
   const raw = fs.readFileSync(path.join(postsDir, `${slug}.md`), 'utf8');
   const { data, content } = matter(raw);
   const result = await processor.process(content);
