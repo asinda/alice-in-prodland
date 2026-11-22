@@ -1,7 +1,7 @@
 // app/api/schedule/publish/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'node:crypto'
-import { claimNextPending, markPublished, markFailed } from '@/lib/schedule'
+import { claimNextPending, hasPublishedSince, markPublished, markFailed } from '@/lib/schedule'
 import { setContentStatus } from '@/lib/content-status'
 import { getPostBySlug, publishPost, createPost } from '@/lib/db'
 import { getFsPostRaw } from '@/lib/posts'
@@ -22,6 +22,9 @@ export async function POST(req: NextRequest) {
   if (!verifyToken(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  // Le cron se déclenche deux fois par jour de publication (heure d'été/hiver) : une seule publication par créneau
+  if (hasPublishedSince(6 * 60 * 60 * 1000)) return NextResponse.json({ status: 'cooldown' })
 
   const entry = claimNextPending()
   if (!entry) return NextResponse.json({ status: 'no_pending' })

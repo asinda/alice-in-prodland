@@ -5,9 +5,17 @@ interface LinkedInPayload {
   excerpt: string;
   url: string;
   tags: string[];
+  /** Teaser rédigé (IA, relu par l'admin). Sans lui, un modèle simple titre + extrait est utilisé. */
+  text?: string;
 }
 
-function buildPostText({ title, excerpt, url, tags }: LinkedInPayload): string {
+export function buildPostText({ title, excerpt, url, tags, text }: LinkedInPayload): string {
+  if (text && text.trim()) {
+    // Le teaser n'inclut pas l'URL : on la place en fin de post, avant d'éventuels hashtags déjà présents
+    return `${text.trim()}
+
+→ ${url}`;
+  }
   const hashtags = tags.slice(0, 5).map(t => `#${t.replace(/[^a-zA-Z0-9]/g, '')}`).join(' ');
   return [
     `📝 ${title}`,

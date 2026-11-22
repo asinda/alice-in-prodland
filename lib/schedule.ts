@@ -73,6 +73,17 @@ export function claimNextPending(now: Date = new Date()): ScheduleEntry | null {
   return entries[idx]
 }
 
+/** Vrai si une entrée a été publiée depuis `ms` millisecondes (anti double publication entre deux déclenchements du cron). */
+export function hasPublishedSince(ms: number, now: Date = new Date()): boolean {
+  return readAll().some(e => e.status === 'published' && !!e.publishedAt && now.getTime() - new Date(e.publishedAt).getTime() < ms)
+}
+
+/** Vrai si un créneau (instant UTC) est déjà pris par une entrée en attente ou en cours. */
+export function isSlotTaken(slotIso: string): boolean {
+  const day = slotIso.slice(0, 10)
+  return readAll().some(e => (e.status === 'pending' || e.status === 'processing') && e.scheduledAt.slice(0, 10) === day)
+}
+
 export function markPublished(id: string): void {
   const entries = readAll()
   const idx = entries.findIndex(e => e.id === id)

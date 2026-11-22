@@ -32,7 +32,7 @@ beforeEach(() => {
   store.clear()
   store.set('d1', {
     id: 'd1', postId: 'p1', slug: 's', title: 'T', excerpt: 'E', url: 'http://x/blog/s',
-    imageUrl: 'http://x/social/s.png', instagramCaption: 'IG', youtubePost: 'YT', status: 'pending',
+    imageUrl: 'http://x/social/s.png', linkedinTeaser: 'TEASER', instagramCaption: 'IG', youtubePost: 'YT', status: 'pending',
   })
 })
 
@@ -52,6 +52,7 @@ describe('publishDraft', () => {
     const { publishDraft } = await import('../agents/distribute')
     const res = await publishDraft('d1')
     expect(res.failed).toBe(false)
+    expect(li.postToLinkedIn).toHaveBeenCalledWith(expect.objectContaining({ text: 'TEASER', url: 'http://x/blog/s' }))
     expect(ig.postToInstagram).toHaveBeenCalledWith({ imageUrl: 'http://x/social/s.png', caption: 'IG' })
     expect(yt.postYoutubeCommunity).toHaveBeenCalledWith({ text: 'YT' })
     expect(store.get('d1')?.status).toBe('posted')
@@ -111,5 +112,28 @@ describe('isAutoPostEnabled', () => {
     process.env.SOCIAL_AUTO_POST = 'true'
     expect(isAutoPostEnabled()).toBe(true)
     delete process.env.SOCIAL_AUTO_POST
+  })
+})
+
+describe('isAutoPostEnabled via réglage admin', () => {
+  it('suit le réglage enregistré (data/settings.json) et reste désactivé si illisible', async () => {
+    const fs = await import('fs')
+    const os = await import('os')
+    const path = await import('path')
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aip-set-'))
+    fs.mkdirSync(path.join(dir, 'data'))
+    const spy = vi.spyOn(process, 'cwd').mockReturnValue(dir)
+    try {
+      delete process.env.SOCIAL_AUTO_POST
+      const { isAutoPostEnabled } = await import('../agents/distribute')
+      expect(isAutoPostEnabled()).toBe(false)
+      fs.writeFileSync(path.join(dir, 'data', 'settings.json'), '{"autoPost":true}')
+      expect(isAutoPostEnabled()).toBe(true)
+      fs.writeFileSync(path.join(dir, 'data', 'settings.json'), '{"tronq')
+      expect(isAutoPostEnabled()).toBe(false)
+    } finally {
+      spy.mockRestore()
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   })
 })

@@ -7,6 +7,7 @@ import { postYoutubeCommunity } from '../integrations/youtube'
 import { prepareTikTokPost } from '../integrations/tiktok'
 import { getPostById, updatePost, type DbPost } from '../db'
 import { setContentStatus } from '../content-status'
+import { getSettings } from '../settings'
 import { createDraft, getDraft, getOpenDraftForPost, updateDraft, type SocialDraft } from '../social-drafts'
 
 export interface DistributeResult {
@@ -16,9 +17,17 @@ export interface DistributeResult {
 
 const PLATFORMS = ['linkedin', 'instagram', 'youtube'] as const
 
-/** Par défaut, rien n'est posté sans validation humaine. SOCIAL_AUTO_POST=true restaure l'ancien comportement. */
+/**
+ * Par défaut, rien n'est posté sans validation humaine. La publication automatique s'active
+ * dans /admin/social (réglage enregistré) ou avec SOCIAL_AUTO_POST=true.
+ */
 export function isAutoPostEnabled(): boolean {
-  return process.env.SOCIAL_AUTO_POST === 'true'
+  if (process.env.SOCIAL_AUTO_POST === 'true') return true
+  try {
+    return getSettings().autoPost
+  } catch {
+    return false // réglage illisible : on reste en mode validation humaine
+  }
 }
 
 /** Génère image + textes IA et les enregistre comme brouillon à valider. Ne poste rien. */
@@ -42,6 +51,7 @@ export async function prepareSocialDraft(post: DbPost): Promise<SocialDraft> {
     excerpt: post.excerpt,
     url,
     imageUrl: `${siteUrl}${imagePath}`,
+    linkedinTeaser: content.linkedin.text,
     instagramCaption: content.instagram.caption,
     youtubePost: content.youtube.communityPost,
   })
@@ -63,7 +73,7 @@ export async function publishDraft(draftId: string): Promise<DistributeResult> {
   try {
     const done = (p: typeof PLATFORMS[number]) => post.integrations?.[p]?.status === 'success'
     const [linkedin, instagram, youtube, tiktok] = await Promise.all([
-      done('linkedin') ? post.integrations.linkedin : postToLinkedIn({ title: post.title, excerpt: post.excerpt, url: draft.url, tags: post.tags }),
+      done('linkedin') ? post.integrations.linkedin : postToLinkedIn({ title: post.title, excerpt: post.excerpt, url: draft.url, tags: post.tags, text: draft.linkedinTeaser }),
       done('instagram') ? post.integrations.instagram : postToInstagram({ imageUrl: draft.imageUrl, caption: draft.instagramCaption }),
       done('youtube') ? post.integrations.youtube : postYoutubeCommunity({ text: draft.youtubePost }),
       prepareTikTokPost({ title: post.title, excerpt: post.excerpt, url: draft.url, tags: post.tags, type: post.type }),

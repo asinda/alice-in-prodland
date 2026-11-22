@@ -13,7 +13,8 @@ export interface SocialDistributionOutput {
 const t = (max: number) => z.string().trim().min(1).max(max).transform(noEmDash)
 
 export const socialSchema = z.object({
-  linkedin: z.object({ text: t(3000), articleUrl: z.string() }),
+  // Teaser LinkedIn : court (l'URL est ajoutée par le système) ; la limite plateforme est 3000
+  linkedin: z.object({ text: t(1300), articleUrl: z.string() }),
   // Limites des plateformes : Instagram 2200, YouTube community 5000, TikTok caption 150
   instagram: z.object({ caption: t(2200), imagePrompt: t(1000) }),
   youtube: z.object({ communityPost: t(5000) }),
@@ -42,7 +43,7 @@ export async function generateSocialContent(post: {
           linkedin: {
             type: 'object',
             properties: {
-              text: { type: 'string', description: 'Texte LinkedIn, 1200-1500 chars max, ton professionnel, 5 hashtags max' },
+              text: { type: 'string', description: "Teaser LinkedIn (600 à 1000 caractères, 1300 max) : 1re ligne = accroche percutante de 140 caractères max qui donne envie de cliquer sur 'voir plus' ; 2 à 3 puces qui annoncent ce qu'on apprend SANS révéler la conclusion ; une question finale ouverte ; 5 hashtags max sur la dernière ligne. N'inclus PAS l'URL (ajoutée par le système)." },
               articleUrl: { type: 'string', description: 'URL de l\'article' },
             },
             required: ['text', 'articleUrl'],

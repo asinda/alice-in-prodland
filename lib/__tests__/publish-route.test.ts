@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 
 vi.mock('@/lib/schedule', () => ({
   claimNextPending: vi.fn(),
+  hasPublishedSince: vi.fn(() => false),
   markPublished: vi.fn(),
   markFailed: vi.fn(),
 }))
