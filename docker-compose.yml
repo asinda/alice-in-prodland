@@ -1,0 +1,44 @@
+# Déploiement sur une VM (Oracle Cloud Always Free, VPS, etc.)
+# En production, l'image est construite par GitHub Actions (.github/workflows/deploy.yml)
+# et tirée depuis ghcr.io. Sur la VM, il suffit de ce fichier, du Caddyfile et d'un .env.
+# Pour construire localement à la place :  docker compose up -d --build
+services:
+  app:
+    image: ghcr.io/asinda/jambo:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_LEGAL_NAME: ${NEXT_PUBLIC_LEGAL_NAME:-}
+        NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-}
+        NEXT_PUBLIC_HOST_NAME: ${NEXT_PUBLIC_HOST_NAME:-}
+        NEXT_PUBLIC_HOST_ADDRESS: ${NEXT_PUBLIC_HOST_ADDRESS:-}
+        NEXT_PUBLIC_HOST_URL: ${NEXT_PUBLIC_HOST_URL:-}
+        NEXT_PUBLIC_CF_BEACON_TOKEN: ${NEXT_PUBLIC_CF_BEACON_TOKEN:-}
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      # Disque persistant : données du CMS (posts, cours, planning, traductions...)
+      - data:/app/data
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data      # certificats HTTPS (Let's Encrypt)
+      - caddy_config:/config
+
+volumes:
+  data:
+  caddy_data:
+  caddy_config:
