@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
-import { actionAddNote, actionDeleteNote, actionNoteToDraft, actionSaveNote, type NoteState } from '../../lib/actions/notes';
+import { actionAddNote, actionDeleteNote, actionNoteToDraft, actionNoteToLesson, actionSaveNote, type NoteState } from '../../lib/actions/notes';
 import styles from '../../styles/AdminNotes.module.css';
 
 type Status = 'idee' | 'a_ecrire' | 'en_cours' | 'ecrit';
@@ -24,7 +24,7 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'error';
  * Éditeur d'une idée : tout est modifiable sur place et enregistré automatiquement après une courte pause de frappe.
  * Le composant est recréé à chaque changement de note (clé = identifiant), il garde donc ses propres valeurs en cours.
  */
-function NoteEditor({ note, plan, onDeleted }: { note: NoteView; plan: PlanView[]; onDeleted: () => void }) {
+function NoteEditor({ note, plan, courses, onDeleted }: { note: NoteView; plan: PlanView[]; courses: { id: string; title: string }[]; onDeleted: () => void }) {
   const [f, setF] = useState<Fields>({
     title: note.title, body: note.body, tags: note.tags.join(', '), status: note.status,
     starred: note.starred, targetSlot: note.targetSlot && plan.some(p => p.slot === note.targetSlot) ? note.targetSlot : '',
@@ -115,6 +115,17 @@ function NoteEditor({ note, plan, onDeleted }: { note: NoteView; plan: PlanView[
         </label>
       </div>
 
+      {courses.length > 0 && (
+        <form action={actionNoteToLesson.bind(null, note.id)} className={styles.lessonForm} onSubmit={flush}>
+          <label className="sr-only" htmlFor={`lesson-${note.id}`}>Cours qui reçoit la leçon</label>
+          <select id={`lesson-${note.id}`} name="courseId" defaultValue="" required>
+            <option value="" disabled>Ajouter cette note comme leçon à…</option>
+            {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+          </select>
+          <button type="submit">Ajouter comme leçon</button>
+        </form>
+      )}
+
       <div className={styles.editorFoot}>
         <span className={styles.saveState} data-state={save} role="status">{label}</span>
         <div className={styles.footActions}>
@@ -143,7 +154,7 @@ function NoteEditor({ note, plan, onDeleted }: { note: NoteView; plan: PlanView[
 /**
  * Carnet d'idées : liste à gauche, éditeur modifiable sur place au centre, plan éditorial face aux prochains créneaux à droite.
  */
-export default function NotesBoard({ notes, plan }: { notes: NoteView[]; plan: PlanView[] }) {
+export default function NotesBoard({ notes, plan, courses }: { notes: NoteView[]; plan: PlanView[]; courses: { id: string; title: string }[] }) {
   const [filter, setFilter] = useState<Status | 'all'>('all');
   const [state, add, adding] = useActionState<NoteState, FormData>(actionAddNote, null);
   const [picked, setPicked] = useState<{ id: string; after: string | null } | null>(null);
@@ -213,7 +224,7 @@ export default function NotesBoard({ notes, plan }: { notes: NoteView[]; plan: P
 
         <section className={styles.editorCol} aria-label="Éditeur de l’idée">
           {current
-            ? <NoteEditor key={current.id} note={current} plan={plan} onDeleted={() => setPicked(null)} />
+            ? <NoteEditor key={current.id} note={current} plan={plan} courses={courses} onDeleted={() => setPicked(null)} />
             : <p className={styles.empty}>Sélectionnez une idée, ou créez-en une.</p>}
         </section>
 

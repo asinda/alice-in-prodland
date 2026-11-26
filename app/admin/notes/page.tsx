@@ -1,6 +1,7 @@
 import { getNotes, buildPlan } from '@/lib/notes';
 import { getSchedule } from '@/lib/schedule';
 import { getAllAdminPosts } from '@/lib/posts';
+import { getCourses } from '@/lib/db';
 import { nextPublicationSlots, formatSlot } from '@/lib/schedule-slots';
 import NotesBoard, { type NoteView, type PlanView } from '@/components/admin/NotesBoard';
 
@@ -27,5 +28,7 @@ export default function NotesPage() {
     targetSlot: n.targetSlot, postId: n.postId, updatedAt: n.updatedAt,
   }));
 
-  return <NotesBoard notes={view} plan={plan} />;
+  const courses = getCourses().map(c => ({ id: c.id, title: c.title }));
+
+  return <NotesBoard notes={view} plan={plan} courses={courses} />;
 }

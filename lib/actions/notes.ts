@@ -3,7 +3,8 @@
 import { requireAdmin } from '../require-admin';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { addNote, updateNote, deleteNote, noteToDraft, parseTags, NOTE_STATUSES, type NoteStatus } from '../notes';
+import { addNote, updateNote, deleteNote, noteToDraft, getNote, parseTags, NOTE_STATUSES, type NoteStatus } from '../notes';
+import { importTextAsLesson } from '../obsidian-import';
 
 export type NoteState = { error?: string; ok?: boolean; id?: string } | null;
 
@@ -79,4 +80,18 @@ export async function actionSaveNote(
   } catch {
     return { ok: false, error: 'Échec de l’enregistrement.' }
   }
+}
+
+/** Ajoute le contenu d'une idée du carnet comme leçon d'un cours existant, puis ouvre le cours. */
+export async function actionNoteToLesson(id: string, formData: FormData): Promise<void> {
+  await requireAdmin();
+  const courseId = String(formData.get('courseId') ?? '');
+  const note = getNote(id);
+  if (!note || !courseId) return;
+  const lesson = importTextAsLesson({ title: note.title, content: note.body || note.title }, courseId);
+  if (!lesson) return;
+  updateNote(id, { status: 'en_cours' });
+  revalidatePath('/admin/notes');
+  revalidatePath('/admin/cours');
+  redirect(`/admin/cours/${courseId}`);
 }
