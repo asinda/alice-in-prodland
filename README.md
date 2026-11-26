@@ -2,7 +2,7 @@
 
 Blog SRE / DevOps bilingue (FR/EN) avec CMS d'administration, cours en ligne et publication automatisée sur les réseaux sociaux.
 
-![CI](https://github.com/OWNER/alice-in-prodland/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/asinda/jambo/actions/workflows/ci.yml/badge.svg)
 
 ## Fonctionnalités
 
