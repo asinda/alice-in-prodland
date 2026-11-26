@@ -24,8 +24,8 @@ function parisOffsetMs(at: Date): number {
 }
 
 /** Convertit une heure locale de Paris en instant UTC. */
-export function parisToUtc(y: number, m: number, d: number, hour: number): Date {
-  const guess = Date.UTC(y, m - 1, d, hour)
+export function parisToUtc(y: number, m: number, d: number, hour: number, minute = 0): Date {
+  const guess = Date.UTC(y, m - 1, d, hour, minute)
   const first = guess - parisOffsetMs(new Date(guess))
   return new Date(guess - parisOffsetMs(new Date(first)))
 }
@@ -53,4 +53,23 @@ export function formatSlot(iso: string, locale = 'fr-FR'): string {
   return new Intl.DateTimeFormat(locale, {
     timeZone: TZ, weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
   }).format(new Date(iso))
+}
+
+const LOCAL_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/
+
+/** Valeur d'un champ « datetime-local » (AAAA-MM-JJThh:mm, heure de Paris) vers un instant UTC. Null si invalide. */
+export function parisLocalToUtc(local: string): Date | null {
+  const m = LOCAL_RE.exec(local)
+  if (!m) return null
+  const [y, mo, d, h, mi] = m.slice(1).map(Number)
+  if (mo < 1 || mo > 12 || d < 1 || d > 31 || h > 23 || mi > 59) return null
+  const date = parisToUtc(y, mo, d, h, mi)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+/** Instant UTC (ISO) vers la valeur d'un champ « datetime-local » en heure de Paris. */
+export function utcToParisLocal(iso: string): string {
+  const p = parts(new Date(iso))
+  const two = (n: number) => String(n).padStart(2, '0')
+  return `${p.year}-${two(p.month)}-${two(p.day)}T${two(p.hour)}:${two(p.minute)}`
 }

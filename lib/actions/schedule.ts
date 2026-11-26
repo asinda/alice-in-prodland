@@ -3,8 +3,9 @@
 
 import { requireAdmin } from '../require-admin';
 import { revalidatePath } from 'next/cache'
-import { addToSchedule, removeFromSchedule, isSlotTaken } from '../schedule'
-import { nextPublicationSlots } from '../schedule-slots'
+import { addToSchedule, removeFromSchedule, isSlotTaken, rescheduleEntry } from '../schedule'
+import { nextPublicationSlots, parisLocalToUtc } from '../schedule-slots'
+import { addNote, updateNote } from '../notes'
 import { getAllAdminPosts } from '../posts'
 import { getContentStatus, setContentStatus } from '../content-status'
 
@@ -64,4 +65,53 @@ export async function actionAutoSchedule(count: number = 3): Promise<AutoSchedul
   revalidatePath('/admin/review')
   const left = ready.length - scheduled.length
   return { scheduled, message: left > 0 ? `${left} article(s) prêt(s) restent à planifier.` : undefined }
+}
+
+export type MoveResult = { ok: true; swappedWith?: string } | { ok: false; error: string }
+
+/** Déplace un article programmé vers un autre créneau (échange s'il est déjà occupé). */
+export async function actionRescheduleEntry(id: string, scheduledAt: string): Promise<MoveResult> {
+  await requireAdmin();
+  const r = rescheduleEntry(id, scheduledAt)
+  revalidatePath('/admin/schedule')
+  revalidatePath('/admin/notes')
+  return r
+}
+
+/** Fixe une date et une heure précises (heure de Paris, format AAAA-MM-JJThh:mm). */
+export async function actionSetEntryLocalTime(id: string, local: string): Promise<MoveResult> {
+  await requireAdmin();
+  const date = parisLocalToUtc(String(local))
+  if (!date) return { ok: false, error: 'Date ou heure invalide.' }
+  const r = rescheduleEntry(id, date.toISOString())
+  revalidatePath('/admin/schedule')
+  return r
+}
+
+/** Note un sujet à venir directement sur un créneau libre : crée une idée dans le carnet, visant ce créneau. */
+export async function actionPlanTopic(title: string, slotIso: string): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  const clean = String(title).trim()
+  if (!clean) return { ok: false, error: 'Écrivez un sujet.' }
+  if (Number.isNaN(new Date(slotIso).getTime())) return { ok: false, error: 'Créneau invalide.' }
+  const note = addNote({ title: clean })
+  updateNote(note.id, { targetSlot: slotIso, status: 'a_ecrire' })
+  revalidatePath('/admin/schedule')
+  revalidatePath('/admin/notes')
+  return { ok: true }
+}
+
+/** Programme un article prêt à une date et une heure précises (heure de Paris). Refuse le passé et un jour déjà pris. */
+export async function actionScheduleAtLocal(slug: string, source: 'fs' | 'db', local: string): Promise<{ ok: boolean; error?: string }> {
+  await requireAdmin();
+  const when = parisLocalToUtc(String(local))
+  if (!when) return { ok: false, error: 'Date ou heure invalide.' }
+  if (when.getTime() <= Date.now()) return { ok: false, error: 'Choisissez une date et une heure à venir.' }
+  const iso = when.toISOString()
+  if (isSlotTaken(iso)) return { ok: false, error: 'Un article est déjà programmé ce jour-là. Déplacez-le d’abord, ou choisissez un autre jour.' }
+  addToSchedule(slug, source === 'db' ? 'db' : 'fs', iso)
+  setContentStatus(slug, { status: 'scheduled' })
+  revalidatePath('/admin/schedule')
+  revalidatePath('/admin/review')
+  return { ok: true }
 }

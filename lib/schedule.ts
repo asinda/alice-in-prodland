@@ -101,3 +101,35 @@ export function markFailed(id: string, error: string): void {
     writeAll(entries)
   }
 }
+
+export type RescheduleResult =
+  | { ok: true; swappedWith?: string }
+  | { ok: false; error: string }
+
+/**
+ * Déplace une entrée en attente vers un autre instant. Si un autre article en attente occupe déjà ce jour, les deux
+ * échangent leur place (glisser-déposer). Les entrées en cours, publiées ou en échec ne bougent pas. Une date passée est refusée.
+ */
+export function rescheduleEntry(id: string, scheduledAt: string, now: Date = new Date()): RescheduleResult {
+  const target = new Date(scheduledAt)
+  if (Number.isNaN(target.getTime())) return { ok: false, error: 'Date invalide.' }
+  if (target.getTime() <= now.getTime()) return { ok: false, error: 'Choisissez un moment à venir.' }
+  const entries = readAll()
+  const i = entries.findIndex(e => e.id === id)
+  if (i === -1) return { ok: false, error: 'Entrée introuvable.' }
+  if (entries[i].status !== 'pending') return { ok: false, error: 'Cet article n’est plus en attente : il ne peut pas être déplacé.' }
+
+  const iso = target.toISOString()
+  const day = iso.slice(0, 10)
+  const j = entries.findIndex(e => e.id !== id && e.status === 'pending' && e.scheduledAt.slice(0, 10) === day)
+  if (j !== -1) {
+    const other = entries[j]
+    entries[j] = { ...other, scheduledAt: entries[i].scheduledAt }
+    entries[i] = { ...entries[i], scheduledAt: iso }
+    writeAll(entries)
+    return { ok: true, swappedWith: other.slug }
+  }
+  entries[i] = { ...entries[i], scheduledAt: iso }
+  writeAll(entries)
+  return { ok: true }
+}

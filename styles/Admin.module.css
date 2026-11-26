@@ -72,7 +72,7 @@
 
 .navLinkActive {
   color: var(--accent) !important;
-  background: rgba(88, 166, 255, 0.08);
+  background: rgba(230, 182, 85, 0.08);
 }
 
 .navIcon { font-size: 0.9rem; }
@@ -97,7 +97,7 @@
   transition: color 0.15s;
 }
 
-.logoutBtn:hover { color: #f97583; }
+.logoutBtn:hover { color: var(--accent-red); }
 
 /* ─── Main ───────────────────────────────────────────────────────────────── */
 .main {
@@ -129,7 +129,7 @@
   align-items: center;
   gap: 0.4rem;
   background: var(--accent);
-  color: #0d1117 !important;
+  color: var(--bg) !important;
   border: none;
   border-radius: 6px;
   padding: 0.5rem 1rem;
@@ -169,7 +169,7 @@
   align-items: center;
   gap: 0.4rem;
   background: transparent;
-  color: #f97583 !important;
+  color: var(--accent-red) !important;
   border: 1px solid rgba(247, 117, 131, 0.3);
   border-radius: 6px;
   padding: 0.5rem 1rem;
@@ -184,7 +184,7 @@
 
 .btnGreen {
   background: var(--accent-green);
-  color: #0d1117 !important;
+  color: var(--bg) !important;
   border: none;
   border-radius: 6px;
   padding: 0.5rem 1rem;
@@ -217,7 +217,7 @@
 
 .table td {
   padding: 0.75rem;
-  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
   font-size: 0.88rem;
 }
@@ -242,9 +242,9 @@
 }
 
 .badgePublished {
-  background: rgba(63, 185, 80, 0.1);
+  background: rgba(95, 211, 192, 0.1);
   color: var(--accent-green);
-  border: 1px solid rgba(63, 185, 80, 0.2);
+  border: 1px solid rgba(95, 211, 192, 0.2);
 }
 
 /* ─── Form ───────────────────────────────────────────────────────────────── */
@@ -311,7 +311,7 @@
 .formError {
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  color: #f97583;
+  color: var(--accent-red);
   background: rgba(247, 117, 131, 0.08);
   border: 1px solid rgba(247, 117, 131, 0.2);
   border-radius: 6px;
@@ -322,8 +322,8 @@
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--accent-green);
-  background: rgba(63, 185, 80, 0.08);
-  border: 1px solid rgba(63, 185, 80, 0.2);
+  background: rgba(95, 211, 192, 0.08);
+  border: 1px solid rgba(95, 211, 192, 0.2);
   border-radius: 6px;
   padding: 0.5rem 0.75rem;
 }
@@ -395,7 +395,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  border-bottom: 1px solid var(--border);
 }
 
 .diffusionRow:last-child { border-bottom: none; }
@@ -410,7 +410,7 @@
 .diffusionError {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: #f97583;
+  color: var(--accent-red);
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -426,20 +426,20 @@
 
 .badgeError {
   background: rgba(247, 117, 131, 0.08);
-  color: #f97583;
+  color: var(--accent-red);
   border: 1px solid rgba(247, 117, 131, 0.2);
 }
 
 .badgeSkipped {
   background: rgba(255, 166, 87, 0.08);
-  color: #ffa657;
+  color: var(--accent-orange);
   border: 1px solid rgba(255, 166, 87, 0.2);
 }
 
 .badgeFs {
-  background: rgba(188, 140, 255, 0.08);
+  background: rgba(229, 143, 176, 0.08);
   color: var(--accent-purple);
-  border: 1px solid rgba(188, 140, 255, 0.2);
+  border: 1px solid rgba(229, 143, 176, 0.2);
   font-size: 0.62rem;
 }
 
@@ -592,7 +592,7 @@
   font-size: 0.72rem;
   background: rgba(255, 166, 87, 0.1);
   border: 1px solid rgba(255, 166, 87, 0.3);
-  color: #ffa657;
+  color: var(--accent-orange);
   border-radius: 6px;
   padding: 0.4rem 0.85rem;
   letter-spacing: 0.06em;
@@ -627,3 +627,15 @@
   .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); }
   .main { padding: 1.5rem 1rem; }
 }
+
+/* ─── Schéma de verre : harmonisation des pages d'administration ─────────── */
+.pageTitle { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; letter-spacing: -0.035em; }
+.pageTitle span { display: none; }
+.btnPrimary, .btnSecondary, .btnDanger, .btnGreen { border-radius: 10px; font-family: var(--font-body); font-weight: 600; }
+.btnPrimary { background: var(--signal); color: var(--on-signal) !important; }
+.statCard { background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--glass-line); border-radius: 16px; box-shadow: var(--glass-shadow); }
+.formInput, .formSelect, .formTextarea, .filterSearch, .filterSelect { border-radius: 10px; }
+.badge { border-radius: 6px; }
+.table th { font-family: var(--font-mono); }
+.table tr:hover td { background: color-mix(in srgb, var(--text-heading) 5%, transparent); }
+.diffusion { border-radius: 16px; background: var(--glass); border: 1px solid var(--glass-line); }

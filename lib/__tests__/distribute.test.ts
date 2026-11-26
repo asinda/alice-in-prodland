@@ -106,12 +106,24 @@ describe('publishDraft', () => {
 
 describe('isAutoPostEnabled', () => {
   it('est desactive par defaut et actif seulement avec SOCIAL_AUTO_POST=true', async () => {
-    const { isAutoPostEnabled } = await import('../agents/distribute')
-    delete process.env.SOCIAL_AUTO_POST
-    expect(isAutoPostEnabled()).toBe(false)
-    process.env.SOCIAL_AUTO_POST = 'true'
-    expect(isAutoPostEnabled()).toBe(true)
-    delete process.env.SOCIAL_AUTO_POST
+    // Données isolées : le réglage réel (data/settings.json) ne doit pas influencer ce test.
+    const fs = await import('fs')
+    const os = await import('os')
+    const path = await import('path')
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'aip-env-'))
+    fs.mkdirSync(path.join(dir, 'data'))
+    const spy = vi.spyOn(process, 'cwd').mockReturnValue(dir)
+    try {
+      const { isAutoPostEnabled } = await import('../agents/distribute')
+      delete process.env.SOCIAL_AUTO_POST
+      expect(isAutoPostEnabled()).toBe(false)
+      process.env.SOCIAL_AUTO_POST = 'true'
+      expect(isAutoPostEnabled()).toBe(true)
+    } finally {
+      delete process.env.SOCIAL_AUTO_POST
+      spy.mockRestore()
+      fs.rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
 

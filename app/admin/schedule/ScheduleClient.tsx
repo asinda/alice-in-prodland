@@ -1,111 +1,254 @@
-// app/admin/schedule/ScheduleClient.tsx
 'use client'
 import { useState, useTransition } from 'react'
-import { actionAddToSchedule, actionRemoveFromSchedule, actionAutoSchedule, type AutoScheduleResult } from '@/lib/actions/schedule'
-import { formatSlot } from '@/lib/schedule-slots'
+import Link from 'next/link'
+import {
+  actionAddToSchedule, actionRemoveFromSchedule, actionAutoSchedule, actionRescheduleEntry, actionSetEntryLocalTime, actionPlanTopic, actionScheduleAtLocal,
+  type AutoScheduleResult,
+} from '@/lib/actions/schedule'
+import { utcToParisLocal } from '@/lib/schedule-slots'
 import type { ScheduleEntry } from '@/lib/schedule'
 import type { AdminPostRow } from '@/lib/posts'
+import styles from '@/styles/AdminSchedule.module.css'
 
+const TZ = 'Europe/Paris'
+const dayName = (iso: string) => new Intl.DateTimeFormat('fr-FR', { timeZone: TZ, weekday: 'short' }).format(new Date(iso)).replace('.', '')
+const dayNum = (iso: string) => new Intl.DateTimeFormat('fr-FR', { timeZone: TZ, day: 'numeric', month: 'short' }).format(new Date(iso))
+const hourOf = (iso: string) => new Intl.DateTimeFormat('fr-FR', { timeZone: TZ, hour: '2-digit', minute: '2-digit' }).format(new Date(iso))
+const ymd = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date(iso))
+const fullLabel = (iso: string) => `${dayName(iso)} ${dayNum(iso)} · ${hourOf(iso)}`
+
+/** Clé de semaine = date (Paris) du lundi correspondant. */
+function weekKey(iso: string): string {
+  const [y, m, d] = ymd(iso).split('-').map(Number)
+  const date = new Date(Date.UTC(y, m - 1, d))
+  date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7))
+  return date.toISOString().slice(0, 10)
+}
+
+function weekLabel(key: string): string {
+  const monday = new Date(`${key}T12:00:00Z`)
+  const friday = new Date(monday.getTime() + 4 * 86_400_000)
+  const f = (d: Date) => new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', day: 'numeric', month: 'long' }).format(d)
+  return `Semaine du ${f(monday)} au ${f(friday)}`
+}
+
+export interface ScheduleNote { id: string; title: string; targetSlot?: string; status: string }
+
+/**
+ * Calendrier de publication, modifiable partout : glisser un article vers un autre créneau (ou le faire échanger sa place),
+ * le déplacer avec la liste, fixer une date et une heure précises, noter un sujet à venir sur un créneau libre.
+ */
 export default function ScheduleClient({
-  schedule,
-  readyPosts,
-  slots,
+  schedule, posts, readyPosts, slots, notes,
 }: {
   schedule: ScheduleEntry[]
+  posts: { slug: string; title: string }[]
   readyPosts: AdminPostRow[]
   slots: string[]
+  notes: ScheduleNote[]
 }) {
   const [isPending, startTransition] = useTransition()
-  const [selectedSlug, setSelectedSlug] = useState('')
-  const [auto, setAuto] = useState<AutoScheduleResult | null>(null)
+  const [openSlot, setOpenSlot] = useState<string | null>(null)
+  const [result, setResult] = useState<AutoScheduleResult | null>(null)
+  const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null)
+  const [dragOver, setDragOver] = useState<string | null>(null)
+  const [topic, setTopic] = useState<Record<string, string>>({})
+  const [preciseSlug, setPreciseSlug] = useState('')
+  const [preciseWhen, setPreciseWhen] = useState('')
 
-  const pendingSlots = schedule.filter(e => e.status === 'pending')
+  const pending = schedule.filter(e => e.status === 'pending')
+  const entryAt = (slot: string) => pending.find(e => e.scheduledAt.slice(0, 10) === slot.slice(0, 10))
+  const notesAt = (slot: string) => notes.filter(n => n.targetSlot && n.targetSlot.slice(0, 10) === slot.slice(0, 10) && n.status !== 'ecrit')
+  const titleOf = (slug: string) => posts.find(p => p.slug === slug)?.title ?? readyPosts.find(p => p.slug === slug)?.title ?? slug
+  const usedSlugs = new Set(pending.map(e => e.slug))
+  const available = readyPosts.filter(p => !usedSlugs.has(p.slug))
 
-  const planAuto = (count: number) => startTransition(async () => {
-    setAuto(await actionAutoSchedule(count))
-  })
+  const weeks = new Map<string, string[]>()
+  for (const s of slots) {
+    const k = weekKey(s)
+    weeks.set(k, [...(weeks.get(k) ?? []), s])
+  }
+
+  const say = (text: string, error = false) => setMessage({ text, error })
+  const fill = (count: number) => startTransition(async () => setResult(await actionAutoSchedule(count)))
+
+  const move = (entryId: string, iso: string) =>
+    startTransition(async () => {
+      const r = await actionRescheduleEntry(entryId, iso)
+      say(r.ok ? (r.swappedWith ? `Échangé avec « ${titleOf(r.swappedWith)} ».` : 'Déplacé.') : r.error, !r.ok)
+    })
+
+  const setExact = (entryId: string, local: string) =>
+    startTransition(async () => {
+      const r = await actionSetEntryLocalTime(entryId, local)
+      say(r.ok ? 'Date et heure modifiées.' : r.error, !r.ok)
+    })
+
+  const addPrecise = () => {
+    const post = available.find(p => p.slug === preciseSlug)
+    if (!post) return say('Choisissez un article prêt.', true)
+    if (!preciseWhen) return say('Choisissez une date et une heure.', true)
+    startTransition(async () => {
+      const r = await actionScheduleAtLocal(post.slug, post.source as 'fs' | 'db', preciseWhen)
+      if (r.ok) { setPreciseSlug(''); setPreciseWhen(''); say('Programmé.') } else say(r.error ?? 'Échec.', true)
+    })
+  }
+
+  const planTopic = (slot: string) => {
+    const text = (topic[slot] ?? '').trim()
+    if (!text) return
+    startTransition(async () => {
+      const r = await actionPlanTopic(text, slot)
+      if (r.ok) { setTopic(t => ({ ...t, [slot]: '' })); say('Sujet noté dans le carnet pour ce créneau.') } else say(r.error ?? 'Échec.', true)
+    })
+  }
 
   return (
-    <div>
-      <div style={{ marginBottom: '1.5rem', padding: '1rem', background: '#1e293b', borderRadius: '8px' }}>
-        <p style={{ color: '#f1f5f9', margin: '0 0 0.25rem', fontWeight: 'bold' }}>Planification automatique</p>
-        <p style={{ color: '#94a3b8', margin: '0 0 0.75rem', fontSize: '0.85rem' }}>
-          Place les articles « prêts » (les plus anciens d&apos;abord) sur les prochains créneaux libres.
-          {' '}{readyPosts.length} article(s) prêt(s).
+    <div className={styles.agenda}>
+      <div className={styles.bar}>
+        <p className={styles.count}>
+          {available.length === 0
+            ? 'Aucun article prêt. Marquez un article « prêt » depuis la relecture.'
+            : `${available.length} article${available.length > 1 ? 's' : ''} prêt${available.length > 1 ? 's' : ''} à placer`}
         </p>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button disabled={isPending || readyPosts.length === 0} onClick={() => planAuto(3)}
-            style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-            {isPending ? '...' : '✦ Planifier la semaine (3)'}
+        <div className={styles.barActions}>
+          <button className={styles.btn} disabled={isPending || available.length === 0} onClick={() => fill(3)}>
+            {isPending ? 'Placement…' : 'Remplir la semaine'}
           </button>
-          <button disabled={isPending || readyPosts.length === 0} onClick={() => planAuto(12)}
-            style={{ background: 'transparent', color: '#a78bfa', border: '1px solid #7c3aed', borderRadius: '6px', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-            Planifier le mois (12)
-          </button>
+          <button className={`${styles.btn} ${styles.quiet}`} disabled={isPending || available.length === 0} onClick={() => fill(12)}>Remplir le mois</button>
         </div>
-        {auto && (
-          <div role="status" style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
-            {auto.scheduled.map(s => (
-              <div key={s.slug} style={{ color: '#4ade80' }}>✓ {s.slug} → {formatSlot(s.scheduledAt)}</div>
-            ))}
-            {auto.message && <div style={{ color: '#fbbf24' }}>{auto.message}</div>}
+      </div>
+
+      <details className={styles.precise}>
+        <summary>Programmer à une date et une heure précises</summary>
+        <div className={styles.preciseRow}>
+          <label>Article prêt
+            <select value={preciseSlug} onChange={e => setPreciseSlug(e.target.value)} disabled={available.length === 0}>
+              <option value="">Choisir…</option>
+              {available.map(p => <option key={p.slug} value={p.slug}>{p.title}</option>)}
+            </select>
+          </label>
+          <label>Date et heure (Paris)
+            <input type="datetime-local" value={preciseWhen} onChange={e => setPreciseWhen(e.target.value)} />
+          </label>
+          <button className={styles.btn} disabled={isPending} onClick={addPrecise}>Programmer</button>
+        </div>
+      </details>
+
+      <div role="status" aria-live="polite">
+        {message && <p className={styles.note} data-error={message.error ? 'true' : undefined}>{message.text}</p>}
+        {result && (
+          <div className={styles.note}>
+            {result.scheduled.length > 0 && <p>{result.scheduled.length} créneau{result.scheduled.length > 1 ? 'x' : ''} rempli{result.scheduled.length > 1 ? 's' : ''}.</p>}
+            {result.message && <p>{result.message}</p>}
           </div>
         )}
       </div>
 
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ color: '#94a3b8', fontSize: '0.9rem', textTransform: 'uppercase', marginBottom: '1rem' }}>
-          Prochains créneaux
-        </h2>
-        {slots.map(slot => {
-          const dateStr = slot.slice(0, 10)
-          const scheduled = pendingSlots.find(e => e.scheduledAt.slice(0, 10) === dateStr)
-          const label = formatSlot(slot)
+      <p className={styles.hint}>Astuce : glissez un article programmé sur un autre créneau pour le déplacer, ou sur un article pour échanger leurs places.</p>
 
-          return (
-            <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem', padding: '0.75rem', background: '#1e293b', borderRadius: '8px' }}>
-              <span style={{ color: '#94a3b8', minWidth: '200px', fontSize: '0.9rem' }}>{label}</span>
-              {scheduled ? (
-                <>
-                  <span style={{ color: '#f1f5f9', flex: 1 }}>{scheduled.slug}</span>
-                  <button
-                    disabled={isPending}
-                    onClick={() => startTransition(() => actionRemoveFromSchedule(scheduled.id, scheduled.slug))}
-                    style={{ background: 'transparent', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '6px', padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.8rem' }}
-                  >
-                    Retirer
-                  </button>
-                </>
-              ) : (
-                <>
-                  <select
-                    value={selectedSlug}
-                    onChange={e => setSelectedSlug(e.target.value)}
-                    style={{ flex: 1, background: '#0f172a', color: '#f1f5f9', border: '1px solid #334155', borderRadius: '6px', padding: '0.3rem 0.5rem' }}
-                  >
-                    <option value="">— choisir un post —</option>
-                    {readyPosts.map(p => (
-                      <option key={p.slug} value={p.slug}>{p.title}</option>
-                    ))}
-                  </select>
-                  <button
-                    disabled={isPending || !selectedSlug}
-                    onClick={() => {
-                      if (!selectedSlug) return
-                      const post = readyPosts.find(p => p.slug === selectedSlug)!
-                      startTransition(() => actionAddToSchedule(selectedSlug, post.source as 'fs' | 'db', slot))
-                      setSelectedSlug('')
-                    }}
-                    style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.8rem', cursor: 'pointer', fontSize: '0.85rem' }}
-                  >
-                    Planifier
-                  </button>
-                </>
-              )}
-            </div>
-          )
-        })}
-      </div>
+      {[...weeks.entries()].map(([key, weekSlots]) => (
+        <section key={key} className={styles.week} aria-label={weekLabel(key)}>
+          <h2 className={styles.weekTitle}>{weekLabel(key)}</h2>
+          <div className={styles.grid}>
+            {weekSlots.map(slot => {
+              const entry = entryAt(slot)
+              const ideas = notesAt(slot)
+              const open = openSlot === slot
+              return (
+                <div
+                  key={slot}
+                  className={`${styles.cell} ${entry ? styles.taken : styles.free}`}
+                  data-over={dragOver === slot ? 'true' : undefined}
+                  draggable={!!entry && !isPending}
+                  onDragStart={e => { if (entry) { e.dataTransfer.setData('text/plain', entry.id); e.dataTransfer.effectAllowed = 'move' } }}
+                  onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (dragOver !== slot) setDragOver(slot) }}
+                  onDragLeave={() => setDragOver(d => (d === slot ? null : d))}
+                  onDrop={e => {
+                    e.preventDefault(); setDragOver(null)
+                    const id = e.dataTransfer.getData('text/plain')
+                    if (id && id !== entry?.id) move(id, slot)
+                  }}
+                >
+                  <div className={styles.when}>
+                    <span className={styles.day}>{dayName(slot)} {dayNum(slot)}</span>
+                    <span className={styles.hour}>{entry ? hourOf(entry.scheduledAt) : hourOf(slot)}</span>
+                  </div>
+
+                  {entry ? (
+                    <>
+                      <p className={styles.title}>{titleOf(entry.slug)}</p>
+                      <details className={styles.edit}>
+                        <summary>Modifier</summary>
+                        <label>Déplacer vers
+                          <select defaultValue="" disabled={isPending} onChange={e => { if (e.target.value) move(entry.id, e.target.value) }}>
+                            <option value="" disabled>Choisir un créneau</option>
+                            {slots.filter(s => s !== slot).map(s => (
+                              <option key={s} value={s}>{fullLabel(s)}{entryAt(s) ? ' · occupé (échange)' : ''}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>Date et heure précises (Paris)
+                          <input
+                            type="datetime-local"
+                            defaultValue={utcToParisLocal(entry.scheduledAt)}
+                            disabled={isPending}
+                            onBlur={e => { if (e.target.value && e.target.value !== utcToParisLocal(entry.scheduledAt)) setExact(entry.id, e.target.value) }}
+                          />
+                        </label>
+                        <div className={styles.editLinks}>
+                          <Link href={`/admin/review`} className={styles.link}>Voir la relecture</Link>
+                          <button className={styles.danger} disabled={isPending}
+                            onClick={() => startTransition(() => actionRemoveFromSchedule(entry.id, entry.slug))}>
+                            Libérer le créneau
+                          </button>
+                        </div>
+                      </details>
+                    </>
+                  ) : (
+                    <>
+                      {ideas.map(n => (
+                        <Link key={n.id} href="/admin/notes" className={styles.idea}><i>idée</i>{n.title}</Link>
+                      ))}
+                      {open ? (
+                        <div className={styles.pick}>
+                          <label className="sr-only" htmlFor={`pick-${slot}`}>Article à publier</label>
+                          <select id={`pick-${slot}`} defaultValue="" disabled={isPending}
+                            onChange={e => {
+                              const post = available.find(p => p.slug === e.target.value)
+                              if (!post) return
+                              setOpenSlot(null)
+                              startTransition(() => actionAddToSchedule(post.slug, post.source as 'fs' | 'db', slot))
+                            }}>
+                            <option value="" disabled>Choisir un article</option>
+                            {available.map(p => <option key={p.slug} value={p.slug}>{p.title}</option>)}
+                          </select>
+                          <button className={styles.link} onClick={() => setOpenSlot(null)}>Annuler</button>
+                        </div>
+                      ) : (
+                        <button className={styles.add} disabled={isPending || available.length === 0} onClick={() => setOpenSlot(slot)}>
+                          Réserver ce créneau
+                        </button>
+                      )}
+                      <form className={styles.topicForm} onSubmit={e => { e.preventDefault(); planTopic(slot) }}>
+                        <label className="sr-only" htmlFor={`topic-${slot}`}>Noter un sujet pour ce créneau</label>
+                        <input
+                          id={`topic-${slot}`}
+                          value={topic[slot] ?? ''}
+                          onChange={e => setTopic(t => ({ ...t, [slot]: e.target.value }))}
+                          placeholder="Noter un sujet…"
+                          maxLength={200}
+                        />
+                        <button type="submit" disabled={isPending || !(topic[slot] ?? '').trim()} aria-label="Ajouter au carnet">+</button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   )
 }
