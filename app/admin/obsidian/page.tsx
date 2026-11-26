@@ -8,7 +8,10 @@ import {
   vaultExists,
   parentDir,
 } from '../../../lib/obsidian';
-import { actionImportAsPost } from '../../../lib/actions/obsidian';
+import { actionImportAsPost, actionImportAsLesson, actionImportFolderAsCourse } from '../../../lib/actions/obsidian';
+import { getCourses } from '../../../lib/db';
+import ImportNoteForm from '../../../components/admin/ImportNoteForm';
+import importStyles from '../../../styles/AdminImport.module.css';
 import styles from '../../../styles/Admin.module.css';
 import vaultStyles from '../../../styles/Obsidian.module.css';
 
@@ -38,15 +41,18 @@ export default async function ObsidianPage({
 }: {
   searchParams: Promise<{ dir?: string; file?: string }>;
 }) {
+  const courses = getCourses().map(c => ({ id: c.id, title: c.title }));
+
   if (!vaultExists()) {
     return (
       <div>
         <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}><span>◎</span> Obsidian Vault</h1>
+          <h1 className={styles.pageTitle}>Importer des notes</h1>
         </div>
         <p className={styles.empty}>
-          Vault introuvable. Définir <code>OBSIDIAN_VAULT_PATH</code> dans <code>.env.local</code>.
+          Vault introuvable. Définir <code>OBSIDIAN_VAULT_PATH</code> dans <code>.env.local</code> pour parcourir vos notes.
         </p>
+        <div className={importStyles.section}><ImportNoteForm courses={courses} /></div>
       </div>
     );
   }
@@ -85,6 +91,16 @@ export default async function ObsidianPage({
               ↓ Importer comme article (brouillon)
             </button>
           </form>
+          {courses.length > 0 && (
+            <form action={actionImportAsLesson} className={importStyles.bar} style={{ padding: 0, border: 0, background: 'none' }}>
+              <input type="hidden" name="filePath" value={file} />
+              <select name="courseId" defaultValue="" required aria-label="Cours qui reçoit la leçon">
+                <option value="" disabled>Ajouter comme leçon à…</option>
+                {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+              </select>
+              <button type="submit">Ajouter comme leçon</button>
+            </form>
+          )}
           <span className={vaultStyles.importHint}>
             Crée un brouillon éditable dans Posts &amp; Tutoriels
           </span>
@@ -105,7 +121,7 @@ export default async function ObsidianPage({
     <div>
       <div className={styles.pageHeader}>
         <div>
-          <h1 className={styles.pageTitle}><span>◎</span> Obsidian Vault</h1>
+          <h1 className={styles.pageTitle}>Importer des notes</h1>
           <Breadcrumb dir={dir} />
         </div>
         {backDir !== null && (
@@ -117,6 +133,17 @@ export default async function ObsidianPage({
           </Link>
         )}
       </div>
+
+      {entries.some(e => e.type === 'file' && /\.md$/i.test(e.name)) && (
+        <div className={importStyles.bar}>
+          <form action={actionImportFolderAsCourse}>
+            <input type="hidden" name="dir" value={dir} />
+            <input name="title" placeholder="Titre du cours (par défaut : nom du dossier)" maxLength={200} aria-label="Titre du cours" size={34} />
+            <button type="submit">Créer un cours depuis ce dossier</button>
+          </form>
+          <span className={importStyles.hint}>Une leçon par note .md du dossier, dans l’ordre des noms (01, 02, … 10). Brouillon à relire.</span>
+        </div>
+      )}
 
       {entries.length === 0 ? (
         <p className={styles.empty}>Dossier vide.</p>
@@ -143,6 +170,8 @@ export default async function ObsidianPage({
           ))}
         </div>
       )}
+
+      <div className={importStyles.section}><ImportNoteForm courses={courses} /></div>
     </div>
   );
 }

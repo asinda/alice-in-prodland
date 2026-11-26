@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { getCourses } from '../../../lib/db';
-import { getCourseTranslation } from '../../../lib/courseTranslations';
-import styles from '../../../styles/Cours.module.css';
+import CourseModules from '../../../components/CourseModules';
+import ed from '../../../styles/Editorial.module.css';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'courses' });
-  return { title: `${t('title')} — alice-in-prodland` };
+  return { title: `${t('title')} — Jambo` };
 }
 
 export default async function CoursIndex({ params }: { params: Promise<{ locale: string }> }) {
@@ -16,51 +14,15 @@ export default async function CoursIndex({ params }: { params: Promise<{ locale:
   setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: 'courses' });
 
-  const rawCourses = getCourses({ status: 'published' });
-  const courses = rawCourses.map(course => {
-    if (locale === 'en') {
-      const t2 = getCourseTranslation(course.slug);
-      return {
-        ...course,
-        title: t2?.titleEn || course.title,
-        description: t2?.descriptionEn || course.description,
-      };
-    }
-    return course;
-  });
-
   return (
     <>
-      <div className={styles.header}>
-        <h1 className={styles.pageTitle}>
-          <span className={styles.slash}>/</span>{t('title')}
-        </h1>
-        <p className={styles.pageSubtitle}>{t('subtitle')}</p>
-      </div>
+      <header className={ed.pageHead}>
+        <h1 className={ed.pageTitle}>{t('title')}</h1>
+        <p className={ed.pageLead}>{t('subtitle')}</p>
+      </header>
 
-      <div className={styles.courseGrid}>
-        {courses.map(course => {
-          const count = course.lessons.length;
-          const label = count === 1 ? t('lessons') : t('lessonsPlural');
-          return (
-            <Link key={course.id} href={`/${locale}/cours/${course.slug}`} className={styles.courseCard}>
-              <div className={styles.courseIcon}>◈</div>
-              <h2 className={styles.courseTitle}>{course.title}</h2>
-              {course.description && <p className={styles.courseDesc}>{course.description}</p>}
-              <div className={styles.courseMeta}>
-                <span className={styles.lessonCount}>{count} {label}</span>
-              </div>
-              {course.tags.length > 0 && (
-                <div className={styles.tagList}>
-                  {course.tags.map(tag => (
-                    <span key={tag} className={styles.tag}>{tag}</span>
-                  ))}
-                </div>
-              )}
-              <span className={styles.startLink}>{t('start')}</span>
-            </Link>
-          );
-        })}
+      <div className="hud-box">
+        <CourseModules locale={locale} />
       </div>
     </>
   );

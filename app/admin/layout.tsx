@@ -1,65 +1,38 @@
 import Link from 'next/link';
 import { logout } from '../../lib/actions/auth';
-import styles from '../../styles/Admin.module.css';
+import { SITE_NAME } from '../../lib/site';
+import { LogoMark } from '../../components/Logo';
+import AdminChrome from '../../components/admin/AdminChrome';
+import AdminNav from '../../components/admin/AdminNav';
+import AdminPalette from '../../components/admin/AdminPalette';
+import AdminThemeToggle from '../../components/admin/AdminThemeToggle';
+import styles from '../../styles/AdminShell.module.css';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarBrand}>
-          <p className={styles.brandLine}>alice-in-prodland</p>
-          <p className={styles.brandName}>$ admin</p>
-        </div>
-
-        <nav className={styles.sidebarNav}>
-          <span className={styles.navSection}>overview</span>
-          <Link href="/admin" className={styles.navLink}>
-            <span className={styles.navIcon}>~</span> Dashboard
+    <AdminChrome
+      side={
+        <aside className={styles.side}>
+          <Link href="/admin" className={styles.brand}>
+            <LogoMark size={24} />
+            <span>{SITE_NAME.toLowerCase()}</span>
+            <small>admin</small>
           </Link>
 
-          <span className={styles.navSection}>contenu</span>
-          <Link href="/admin/posts" className={styles.navLink}>
-            <span className={styles.navIcon}>✦</span> Posts & Tutoriels
-          </Link>
-          <Link href="/admin/cours" className={styles.navLink}>
-            <span className={styles.navIcon}>◈</span> Cours
-          </Link>
-          <Link href="/admin/obsidian" className={styles.navLink}>
-            <span className={styles.navIcon}>◎</span> Obsidian Vault
-          </Link>
+          <AdminNav />
 
-          <span className={styles.navSection}>traduction</span>
-          <Link href="/admin/translate" className={styles.navLink}>
-            <span className={styles.navIcon}>⇄</span> FR → EN
-          </Link>
-
-          <span className={styles.navSection}>publication</span>
-          <Link href="/admin/review" className={styles.navLink}>
-            <span className={styles.navIcon}>⟳</span> Révision
-          </Link>
-          <Link href="/admin/schedule" className={styles.navLink}>
-            <span className={styles.navIcon}>◷</span> Calendrier
-          </Link>
-
-          <span className={styles.navSection}>site</span>
-          <Link href="/admin/stats" className={styles.navLink}>
-            <span className={styles.navIcon}>◉</span> Statistiques
-          </Link>
-          <Link href="/" className={styles.navLink} target="_blank">
-            <span className={styles.navIcon}>↗</span> Voir le site
-          </Link>
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <form action={logout}>
-            <button type="submit" className={styles.logoutBtn}>
-              ⎋ Déconnexion
-            </button>
-          </form>
-        </div>
-      </aside>
-
-      <main className={styles.main}>{children}</main>
-    </div>
+          <div className={styles.foot}>
+            <AdminThemeToggle />
+            <Link href="/" target="_blank">Voir le site ↗</Link>
+            <form action={logout}>
+              <button type="submit">Déconnexion</button>
+            </form>
+          </div>
+        </aside>
+      }
+      palette={<AdminPalette />}
+    >
+      {children}
+    </AdminChrome>
   );
 }

@@ -4,10 +4,11 @@ import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import type { DbCourse, IntegrationStatus } from '../../../../lib/db';
 import {
-  actionUpdateCourse, actionPublishCourse, actionDeleteCourse,
+  actionUpdateCourse, actionPublishCourse, actionHideCourse, actionDeleteCourse,
   actionAddLesson, actionDeleteLesson, actionRepushCourseIntegrations,
 } from '../../../../lib/actions/courses';
 import { getGumroadDashboardUrl } from '../../../../lib/integrations/gumroad';
+import SchedulePostForm from '../../../../components/admin/SchedulePostForm';
 import styles from '../../../../styles/Admin.module.css';
 
 function IntegBadge({ status }: { status: IntegrationStatus }) {
@@ -20,7 +21,7 @@ function IntegBadge({ status }: { status: IntegrationStatus }) {
   return <span className={`${styles.badge} ${cls}`}>{status}</span>;
 }
 
-export default function EditCoursClient({ course }: { course: DbCourse }) {
+export default function EditCoursClient({ course, scheduled }: { course: DbCourse; scheduled?: { id: string; scheduledAt: string } }) {
   const [courseState, courseAction, coursePending] = useActionState(actionUpdateCourse, null);
   const [lessonState, lessonAction, lessonPending] = useActionState(actionAddLesson, null);
   const [copied, setCopied] = useState(false);
@@ -44,12 +45,16 @@ export default function EditCoursClient({ course }: { course: DbCourse }) {
   return (
     <>
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}><span>◈</span> {course.title}</h1>
+        <h1 className={styles.pageTitle}>{course.title}</h1>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <Link href="/admin/cours" className={styles.btnSecondary}>← Retour</Link>
-          {course.status === 'draft' && (
+          {course.status === 'draft' ? (
             <form action={actionPublishCourse.bind(null, course.id)}>
               <button type="submit" className={styles.btnGreen}>→ Publier</button>
+            </form>
+          ) : (
+            <form action={actionHideCourse.bind(null, course.id)}>
+              <button type="submit" className={styles.btnSecondary} title="Retire le cours du site sans le supprimer : vous pourrez le republier ou le programmer">Masquer</button>
             </form>
           )}
           <form action={actionDeleteCourse.bind(null, course.id)}>
@@ -63,9 +68,16 @@ export default function EditCoursClient({ course }: { course: DbCourse }) {
 
       <div style={{ marginBottom: '1rem' }}>
         <span className={`${styles.badge} ${course.status === 'published' ? styles.badgePublished : styles.badgeDraft}`}>
-          {course.status}
+          {course.status === 'published' ? 'en ligne' : 'hors ligne'}
         </span>
       </div>
+
+      {course.status === 'draft' && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem 1.2rem', alignItems: 'center', margin: '0 0 1.2rem', padding: '0.6rem 0.9rem', border: '1px dashed var(--border)', borderRadius: 12, fontSize: '0.88rem', color: 'var(--text-heading)' }}>
+          <span><b>Ce cours est masqué</b> : il n’est pas visible sur le site.</span>
+          <SchedulePostForm slug={course.slug} kind="course" scheduled={scheduled} />
+        </div>
+      )}
 
       <form action={courseAction} className={styles.form} style={{ marginBottom: '2.5rem' }}>
         <input type="hidden" name="id" value={course.id} />

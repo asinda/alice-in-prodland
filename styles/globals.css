@@ -1,18 +1,79 @@
+/* Jambo · Schéma de verre. Clair par défaut (papier bleuté, verre dépoli), cobalt = signal.
+   Le thème sombre (marine profond) suit le système ou le bouton de bascule. */
 :root {
-  --bg: #0d1117;
-  --bg-card: #161b22;
-  --bg-hover: #1c2130;
-  --border: #30363d;
-  --text: #c9d1d9;
-  --text-muted: #8b949e;
-  --text-heading: #e6edf3;
-  --accent: #58a6ff;
-  --accent-green: #3fb950;
-  --accent-purple: #bc8cff;
-  --accent-orange: #f78166;
-  --accent-yellow: #e3b341;
-  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --r: 10px;
+  --bg: #eaeef4;
+  --bg-card: #ffffff;
+  --bg-hover: #e0e6ef;
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-line: rgba(255, 255, 255, 0.95);
+  --glass-shadow: 0 14px 40px rgba(12, 18, 32, 0.07);
+  --dot: rgba(12, 18, 32, 0.15);
+  --code-bg: #0b0f16;
+  --code-text: #d6deeb;
+  --border: #cfd6e2;
+  --text: #3a4458;
+  --text-muted: #5a6580;
+  --text-heading: #0c1220;
+  --accent: #2b4cff;
+  --signal: #2b4cff;
+  --on-signal: #ffffff;
+  --accent-green: #12794d;
+  --accent-purple: #6b46c1;
+  --accent-orange: #b45309;
+  --accent-yellow: #2b4cff;
+  --accent-red: #c2410c;
+  --l-k8s: #2b4cff;
+  --font-display: 'Instrument Sans Variable', 'Instrument Sans', system-ui, sans-serif;
+  --font-body: 'Instrument Sans Variable', 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'DM Mono', 'Cascadia Code', Consolas, monospace;
+  --font-sans: 'Instrument Sans Variable', 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+[data-theme='dark'] {
+  --bg: #0a0f1d;
+  --bg-card: #111831;
+  --bg-hover: #172043;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-line: rgba(255, 255, 255, 0.13);
+  --glass-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+  --dot: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.14);
+  --text: #b9c2d6;
+  --text-muted: #8793ad;
+  --text-heading: #f3f5fb;
+  --accent: #8fa3ff;
+  --signal: #7b90ff;
+  --on-signal: #0a0f1d;
+  --accent-green: #43e08a;
+  --accent-red: #ff8a66;
+  --accent-yellow: #8fa3ff;
+  --l-k8s: #8fa3ff;
+  background: var(--bg);
+  color: var(--text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0a0f1d;
+    --bg-card: #111831;
+    --bg-hover: #172043;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-line: rgba(255, 255, 255, 0.13);
+    --glass-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+    --dot: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.14);
+    --text: #b9c2d6;
+    --text-muted: #8793ad;
+    --text-heading: #f3f5fb;
+    --accent: #8fa3ff;
+    --signal: #7b90ff;
+    --on-signal: #0a0f1d;
+    --accent-green: #43e08a;
+    --accent-red: #ff8a66;
+    --accent-yellow: #8fa3ff;
+    --l-k8s: #8fa3ff;
+  }
 }
 
 *, *::before, *::after {
@@ -47,13 +108,16 @@ a:hover {
 
 h1, h2, h3, h4 {
   color: var(--text-heading);
-  line-height: 1.3;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 code {
   font-family: var(--font-mono);
   font-size: 0.875em;
-  background: rgba(88, 166, 255, 0.08);
+  background: rgba(178, 52, 10, 0.08);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.15em 0.4em;
@@ -62,7 +126,7 @@ code {
 
 pre {
   font-family: var(--font-mono);
-  background: #010409;
+  background: var(--code-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
@@ -76,14 +140,14 @@ pre code {
   background: none;
   border: none;
   padding: 0;
-  color: var(--text);
+  color: var(--code-text);
 }
 
 blockquote {
   border-left: 3px solid var(--accent);
   padding: 0.5rem 1.25rem;
   margin: 1.5rem 0;
-  background: rgba(88, 166, 255, 0.05);
+  background: rgba(178, 52, 10, 0.05);
   border-radius: 0 6px 6px 0;
   color: var(--text-muted);
 }
@@ -184,7 +248,7 @@ pre:focus-within .copy-btn,
 /* Callout blocks — > [!NOTE], > [!WARNING], > [!TIP], > [!DANGER] */
 blockquote:has(p:first-child > strong:first-child) {
   border-left-color: var(--accent-purple);
-  background: rgba(188,140,255,0.05);
+  background: rgba(106,63,156,0.05);
 }
 
 blockquote p > strong:first-child {
@@ -199,14 +263,14 @@ blockquote p > strong:first-child {
 
 /* highlight.js — override background/padding to match the site's pre style */
 .hljs {
-  background: #010409 !important;
+  background: var(--code-bg) !important;
   padding: 0 !important;
   font-size: 0.875rem;
   line-height: 1.6;
 }
 
 pre:has(.hljs) {
-  background: #010409;
+  background: var(--code-bg);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1.25rem 1.5rem;
@@ -254,3 +318,44 @@ pre:has(.hljs) {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Apparition au défilement (voir components/Reveal) */
+.reveal[data-reveal='hidden'] { opacity: 0; transform: translateY(14px); }
+.reveal[data-reveal='shown'] { opacity: 1; transform: none; transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) { .reveal[data-reveal] { opacity: 1; transform: none; transition: none; } }
+
+/* Blocs de code : étiquette de langage */
+pre[data-lang]::before { content: attr(data-lang); position: absolute; top: 0.5rem; left: 0.9rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.02em; color: #8b97ad; pointer-events: none; }
+pre[data-lang] { padding-top: 2.1rem; }
+
+/* ─── Schéma de verre : éléments communs ─────────────────────────────────── */
+/* Grille de points, estompée vers le bas de la page */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image: radial-gradient(var(--dot) 1px, transparent 1.4px);
+  background-size: 22px 22px;
+  -webkit-mask-image: linear-gradient(#000, transparent 80%);
+  mask-image: linear-gradient(#000, transparent 80%);
+}
+
+/* Panneau de verre dépoli avec repères de cadrage aux coins */
+.hud-box {
+  position: relative;
+  background:
+    radial-gradient(420px circle at var(--gx, 50%) var(--gy, -80%), color-mix(in srgb, var(--signal) 11%, transparent), transparent 62%),
+    linear-gradient(160deg, color-mix(in srgb, #fff 38%, transparent), transparent 40%),
+    var(--glass);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-line);
+  border-radius: 16px;
+  box-shadow: var(--glass-shadow);
+  padding: 1.25rem;
+}
+.hud-box::before, .hud-box::after { content: ''; position: absolute; width: 13px; height: 13px; opacity: 0.5; pointer-events: none; }
+.hud-box::before { top: 9px; left: 9px; border-top: 1.5px solid var(--text-heading); border-left: 1.5px solid var(--text-heading); }
+.hud-box::after { bottom: 9px; right: 9px; border-bottom: 1.5px solid var(--text-heading); border-right: 1.5px solid var(--text-heading); }

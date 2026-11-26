@@ -1,12 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
-  <rect width="180" height="180" rx="36" fill="#0d1117"/>
-  <rect x="4" y="4" width="172" height="172" rx="33" fill="none" stroke="#58a6ff" stroke-width="3" opacity="0.35"/>
-  <!-- terminal dots -->
-  <circle cx="24" cy="28" r="5" fill="#f78166"/>
-  <circle cx="40" cy="28" r="5" fill="#e3b341"/>
-  <circle cx="56" cy="28" r="5" fill="#3fb950"/>
-  <!-- separator line -->
-  <line x1="14" y1="42" x2="166" y2="42" stroke="#58a6ff" stroke-width="0.8" opacity="0.2"/>
-  <!-- prompt -->
-  <text x="18" y="118" font-family="'JetBrains Mono',Consolas,monospace" font-size="72" font-weight="700" fill="#58a6ff">&#62;_</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#0b1020"/>
+  <g transform="translate(2.8 3.2) scale(0.82)">
+  <circle cx="10.6" cy="6.4" r="1.9" fill="#f4f6fa"/>
+  <path d="M12.6 6.4H21V18a6.25 6.25 0 0 1-12.5 0" fill="none" stroke="#f4f6fa" stroke-width="2.2" stroke-linecap="round"/>
+  <rect x="6.6" y="10.2" width="3.8" height="5.6" rx="0.8" fill="#7b90ff"/>
+  </g>
 </svg>

@@ -12,9 +12,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { locale, slug } = await params;
   const course = getCourseBySlug(slug);
-  if (!course) return {};
+  if (!course || course.status !== 'published') return {};
   const t = await getTranslations({ locale, namespace: 'courses' });
-  return { title: `${course.title} — ${t('title')} — alice-in-prodland`, description: course.description };
+  return { title: `${course.title} — ${t('title')} — Jambo`, description: course.description };
 }
 
 export default async function CoursDetail(
@@ -43,7 +43,6 @@ export default async function CoursDetail(
       </div>
 
       <header className={styles.courseHeader}>
-        <div className={styles.courseIcon}>◈</div>
         <h1 className={styles.courseTitle}>{displayTitle}</h1>
         {displayDesc && <p className={styles.courseDesc}>{displayDesc}</p>}
         {course.tags.length > 0 && (

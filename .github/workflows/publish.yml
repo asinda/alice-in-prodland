@@ -3,7 +3,10 @@ name: Scheduled Publish
 
 on:
   schedule:
-    - cron: '0 7 * * 1,3,5'   # lun/mer/ven 9h Paris (UTC+2 en été, UTC+1 en hiver)
+    # lun/mer/ven à 9h Paris : deux déclenchements (07:15 UTC en été, 08:15 UTC en hiver).
+    # L'API ne publie qu'une entrée échue et refuse une 2e publication dans les 6 h.
+    - cron: '15 7 * * 1,3,5'
+    - cron: '15 8 * * 1,3,5'
   workflow_dispatch:            # permet de déclencher manuellement depuis GitHub
 
 jobs:

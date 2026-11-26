@@ -50,3 +50,9 @@ docs/superpowers/
 # sauvegardes/temporaires du stockage JSON
 data/*.bak
 data/*.tmp
+
+# Données personnelles (newsletter, messages de contact)
+/data/newsletter.json*
+/data/contact.json*
+/data/notes.json*
+.playwright-mcp/

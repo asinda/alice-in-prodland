@@ -6,7 +6,7 @@ import styles from '../../../styles/About.module.css';
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   return {
-    title: locale === 'fr' ? 'Confidentialité — alice-in-prodland' : 'Privacy — alice-in-prodland',
+    title: locale === 'fr' ? 'Confidentialité — Jambo' : 'Privacy — Jambo',
     alternates: { canonical: `/${locale}/privacy`, languages: { fr: '/fr/privacy', en: '/en/privacy' } },
     robots: { index: true, follow: true },
   };

@@ -19,6 +19,10 @@ export interface TocEntry {
   level: number;
 }
 
+export type Level = 'debutant' | 'intermediaire' | 'avance';
+export const LEVELS: Level[] = ['debutant', 'intermediaire', 'avance'];
+const asLevel = (v: unknown): Level | undefined => (LEVELS as unknown[]).includes(v) ? (v as Level) : undefined;
+
 export interface PostMeta {
   slug: string;
   title: string;
@@ -26,6 +30,8 @@ export interface PostMeta {
   excerpt: string;
   tags: string[];
   readTime: number;
+  /** Niveau technique (frontmatter `level`), absent si non renseigné. */
+  level?: Level;
 }
 
 export interface Post extends PostMeta {
@@ -53,12 +59,20 @@ export async function renderMarkdown(content: string): Promise<{ contentHtml: st
   return { contentHtml, toc: extractToc(contentHtml) };
 }
 
+/** Décode les entités HTML produites par le rendu Markdown (le texte du sommaire est rendu par React, qui échappe déjà). */
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(Number(d)))
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+}
+
 function extractToc(html: string): TocEntry[] {
   const matches = [...html.matchAll(/<h([23])\s+id="([^"]*)"[^>]*>(.*?)<\/h[23]>/gi)];
   return matches.map(m => ({
     level: parseInt(m[1]),
     id: m[2],
-    text: m[3].replace(/<[^>]+>/g, ''),
+    text: decodeEntities(m[3].replace(/<[^>]+>/g, '')),
   }));
 }
 
@@ -80,6 +94,7 @@ function readFsPosts(): PostMeta[] {
         excerpt: data.excerpt as string,
         tags: (data.tags as string[]) ?? [],
         readTime: Math.max(1, Math.round(wordCount / 200)),
+        level: asLevel(data.level),
       };
     })
     .sort((a, b) => (a.date < b.date ? 1 : -1));
@@ -96,13 +111,15 @@ function readDbPosts(): PostMeta[] {
     excerpt: p.excerpt,
     tags: p.tags,
     readTime: Math.max(1, Math.round(p.content.trim().split(/\s+/).length / 200)),
+    level: asLevel(p.level),
   }));
 }
 
 export function getAllPosts(): PostMeta[] {
   const fsPosts = readFsPosts();
   const dbPosts = readDbPosts();
-  const dbSlugs = new Set(dbPosts.map(p => p.slug));
+  // Un article présent en base (même masqué) prend le dessus sur son fichier : c'est ce qui permet de masquer un article « .md ».
+  const dbSlugs = new Set(getPosts().map(p => p.slug));
   return [
     ...dbPosts,
     ...fsPosts.filter(p => !dbSlugs.has(p.slug)),
@@ -131,7 +148,7 @@ export function isSafeSlug(slug: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(slug);
 }
 
-export function getFsPostRaw(slug: string): { title: string; excerpt: string; content: string; tags: string[]; date: string } | null {
+export function getFsPostRaw(slug: string): { title: string; excerpt: string; content: string; tags: string[]; date: string; level?: Level } | null {
   if (!isSafeSlug(slug)) return null;
   const filePath = path.join(postsDir, `${slug}.md`);
   if (!fs.existsSync(filePath)) return null;
@@ -143,6 +160,7 @@ export function getFsPostRaw(slug: string): { title: string; excerpt: string; co
     content,
     tags: (data.tags as string[]) ?? [],
     date: (data.date as string) ?? new Date().toISOString(),
+    level: asLevel(data.level),
   };
 }
 
@@ -204,6 +222,9 @@ export async function getPost(slug: string): Promise<Post> {
     };
   }
 
+  // Masqué (brouillon en base) : introuvable pour le public, même si un fichier du même nom existe
+  if (dbPost) throw new PostNotFoundError(slug);
+
   // Fallback: filesystem post (cached)
   const cached = _fsPostCache.get(slug);
   if (cached) return cached;
@@ -224,6 +245,7 @@ export async function getPost(slug: string): Promise<Post> {
     excerpt: data.excerpt as string,
     tags: (data.tags as string[]) ?? [],
     readTime: Math.max(1, Math.round(wordCount / 200)),
+    level: asLevel(data.level),
     contentHtml,
     toc: extractToc(contentHtml),
   };

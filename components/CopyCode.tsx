@@ -12,6 +12,9 @@ export default function CopyCode({ contentId, copyLabel, copiedLabel, ariaLabel 
     container.querySelectorAll('pre').forEach(pre => {
       if (pre.querySelector('.copy-btn')) return; // already added
 
+      const lang = /language-([\w+-]+)/.exec(pre.querySelector('code')?.className ?? '')?.[1];
+      if (lang && lang !== 'plaintext') pre.dataset.lang = lang;
+
       const btn = document.createElement('button');
       btn.className = 'copy-btn';
       btn.textContent = copyLabel;

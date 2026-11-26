@@ -1,23 +1,24 @@
 .shell {
   min-height: 100vh;
+  overflow-x: clip;
   display: flex;
   flex-direction: column;
 }
+
 
 .header {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(13, 17, 23, 0.92);
-  backdrop-filter: blur(12px);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 
 .nav {
-  max-width: 860px;
+  max-width: 1080px;
   margin: 0 auto;
   padding: 0 1.5rem;
-  height: 56px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -27,127 +28,233 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 600;
+  gap: 0.5rem;
   color: var(--text-heading) !important;
   text-decoration: none !important;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: -0.03em;
 }
 
-.brand:hover .brandName {
-  color: var(--accent);
-}
-
-.prompt {
-  color: var(--accent-green);
-}
-
-.brandName {
-  transition: color 0.15s;
-}
-
-.cursor {
-  color: var(--accent);
-  animation: blink 1.1s step-end infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-
-.links {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
+.links { display: flex; align-items: center; gap: 0.15rem; }
 
 .navLink {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-muted) !important;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--text) !important;
+  padding: 0.65rem 0.7rem;
+  border-radius: var(--r);
   text-decoration: none !important;
+  transition: color 0.12s, background 0.12s;
+}
+.navLink:hover { color: var(--text-heading) !important; background: var(--bg-hover); }
+
+/* Recherche et thème : cibles tactiles de 44 px minimum */
+.searchBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  margin-left: 0.5rem;
+  padding: 0 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.searchBtn:hover { border-color: var(--signal); }
+.searchIcon { width: 16px; height: 16px; }
+.kbd {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text-muted);
 }
 
-.navLink:hover {
-  color: var(--text-heading) !important;
-  background: var(--bg-hover);
-  text-decoration: none !important;
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-left: 0.15rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r);
+  cursor: pointer;
+}
+.iconBtn:hover { border-color: var(--border); color: var(--text-heading); }
+.iconBtn svg { width: 19px; height: 19px; }
+
+/* Thème clair par défaut : on montre la lune (passer au sombre). En sombre : le soleil. */
+.iconSun { display: none; }
+:global(html[data-theme='dark']) .iconSun { display: block; }
+:global(html[data-theme='dark']) .iconMoon { display: none; }
+@media (prefers-color-scheme: dark) {
+  :global(html:not([data-theme='light'])) .iconSun { display: block; }
+  :global(html:not([data-theme='light'])) .iconMoon { display: none; }
 }
 
 .main {
   flex: 1;
-  max-width: 860px;
+  max-width: 1080px;
   width: 100%;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 3rem 1.5rem 5rem;
 }
 
-.footer {
-  border-top: 1px solid var(--border);
-  padding: 1.5rem;
-}
-
+.footer { border-top: 1px solid var(--border); padding: 1.75rem 0; }
 .footerInner {
-  max-width: 860px;
+  max-width: 1080px;
   margin: 0 auto;
+  padding: 0 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.75rem 2rem;
 }
-
-.footerText {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.heart {
-  color: var(--accent-orange);
-}
+.footerText { font-family: var(--font-body); font-size: 0.8rem; color: var(--text-muted); }
+.footerLink { margin-left: 1.25rem; color: var(--text) !important; }
+.heart { color: var(--accent-red); }
 
 .langSwitcher {
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  margin-left: 0.5rem;
+  margin-left: 0.4rem;
   border-left: 1px solid var(--border);
-  padding-left: 0.75rem;
+  padding-left: 0.7rem;
 }
-
 .langBtn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  padding: 0.2rem 0.3rem;
-  border-radius: 3px;
-  transition: color 0.15s;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--text-muted) !important;
+  padding: 0.25rem 0.35rem;
+  border-radius: var(--r);
+  text-decoration: none !important;
 }
+.langBtn:hover { color: var(--text-heading) !important; }
+.langActive { color: var(--accent-yellow) !important; font-weight: 700; }
+.langSep { color: var(--border); font-size: 0.7rem; }
 
-.langBtn:hover { color: var(--text-heading); }
+.tools { display: flex; align-items: center; gap: 0.15rem; }
+.dropWrap { position: relative; }
+button.navLink { font: inherit; font-size: 0.95rem; font-weight: 500; background: none; border: 0; cursor: pointer; min-height: 44px; }
+.caret { display: inline-block; font-size: 0.7rem; transition: transform 0.2s; }
+.caret[data-open='true'] { transform: rotate(180deg); }
+.dropPanel { position: absolute; top: calc(100% + 6px); left: 0; z-index: 120; min-width: 17rem; padding: 0.4rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r); box-shadow: 0 12px 32px rgba(10, 15, 30, 0.12); animation: pop 0.14s ease-out; }
+.dropPanel[hidden] { display: none; }
+.dropLink { display: block; padding: 0.55rem 0.75rem; border-radius: var(--r); color: var(--text) !important; text-decoration: none !important; font-size: 0.92rem; }
+.dropLink:hover, .dropLink:focus-visible { background: var(--bg-hover); color: var(--text-heading) !important; }
+.dropAll { margin-top: 0.2rem; border-top: 1px solid var(--border); border-radius: 0 0 8px 8px; font-weight: 600; color: var(--signal) !important; }
+@keyframes pop { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { .dropPanel { animation: none; } .caret { transition: none; } }
 
-.langActive {
-  color: var(--accent) !important;
-  font-weight: 700;
+.burger { display: none; }
+.mobilePanel { position: absolute; top: 100%; left: 0; right: 0; max-height: calc(100vh - 64px); overflow-y: auto; padding: 0.5rem 1rem 1rem; background: var(--bg); border-bottom: 1px solid var(--border); }
+.mobilePanel[hidden] { display: none; }
+.mobileLink { display: block; padding: 0.8rem 0.25rem; min-height: 44px; border-bottom: 1px solid var(--border); color: var(--text-heading) !important; text-decoration: none !important; font-weight: 600; }
+.mobileSub { padding-left: 1rem; font-weight: 500; color: var(--text) !important; }
+.mobileGroup { margin: 0.9rem 0 0.1rem; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+
+@media (max-width: 860px) {
+  .links { display: none; }
+  .burger { display: inline-flex; }
+  .nav { padding: 0 1rem; }
+  .searchLabel, .kbd { display: none; }
+  .searchBtn { width: 44px; padding: 0; justify-content: center; margin-left: 0; }
+  .langSwitcher { margin-left: 0.15rem; padding-left: 0.4rem; }
 }
-
-.langSep {
-  color: var(--border);
-  font-size: 0.7rem;
-}
-
+@media (min-width: 861px) { .mobilePanel { display: none; } }
 @media (max-width: 600px) {
-  .nav { height: auto; padding: 0.75rem 1rem; flex-wrap: wrap; }
-  .links { gap: 0; }
-  .main { padding: 1.5rem 1rem 3rem; }
+  .main { padding: 1.75rem 1rem 3rem; }
   .footerInner { flex-direction: column; align-items: flex-start; }
 }
+
+.mobileFollow { width: 100%; min-height: 48px; margin-top: 1rem; font: inherit; font-weight: 600; color: var(--bg); background: var(--text-heading); border: 0; border-radius: var(--r); cursor: pointer; }
+
+.brandName::after { content: '_'; margin-left: 0.04em; color: var(--signal); animation: brandCaret 1.1s steps(1) 0.3s 7 both; }
+@keyframes brandCaret { 0% { opacity: 0; } 1%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brandName::after { display: none; } }
+
+/* Logo */
+.brand svg { flex: none; }
+
+/* Pied de page */
+.footer { margin-top: 2rem; padding: 3rem 0 2rem; }
+.footerGrid { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem; display: grid; grid-template-columns: minmax(0, 1.5fr) repeat(3, minmax(0, 1fr)); gap: 2.5rem; }
+.footerBrand { display: grid; gap: 0.8rem; align-content: start; }
+.footerTagline { margin: 0; max-width: 22rem; color: var(--text); line-height: 1.55; font-size: 0.95rem; }
+.footerSmall { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+.footerCol { display: grid; gap: 0.45rem; align-content: start; }
+.footerCol a, .footerBtn { color: var(--text) !important; text-decoration: none !important; font-size: 0.92rem; background: none; border: 0; padding: 0; font: inherit; font-size: 0.92rem; text-align: left; cursor: pointer; width: fit-content; }
+.footerCol a:hover, .footerBtn:hover { color: var(--text-heading) !important; text-decoration: underline !important; text-underline-offset: 4px; }
+.footerHead { margin: 0 0 0.3rem; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+.footerCopy { max-width: 1080px; margin: 2.5rem auto 0; padding: 1.25rem 1.5rem 0; border-top: 1px solid var(--border); font-size: 0.8rem; color: var(--text-muted); }
+@media (max-width: 860px) { .footerGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .footerBrand { grid-column: 1 / -1; } }
+
+/* En-tête : jamais de retour à la ligne dans les liens, recherche compacte sous 1200 px */
+.navLink, button.navLink { white-space: nowrap; padding: 0.65rem 0.55rem; }
+.nav { gap: 0.75rem; }
+@media (max-width: 1200px) and (min-width: 861px) { .searchLabel { display: none; } .searchBtn { padding: 0 0.7rem; } }
+
+/* ─── Centre de contrôle : barre supérieure ──────────────────────────────── */
+.header { background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); z-index: 100; }
+.nav { max-width: 1180px; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 1rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.brandName::after { content: '_'; color: var(--signal); }
+.navLink, button.navLink { font-family: var(--font-display); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; border-radius: var(--r); }
+.navLink:hover, button.navLink:hover { background: transparent; color: var(--signal) !important; }
+.status { display: flex; align-items: center; gap: 0.6rem; margin-right: 0.4rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em; color: var(--text-muted); white-space: nowrap; }
+.statusDot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-green) 20%, transparent); animation: pulse 2.4s ease-in-out infinite; }
+.statusText { text-transform: uppercase; }
+.statusTime { font-variant-numeric: tabular-nums; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px transparent; } }
+@media (prefers-reduced-motion: reduce) { .statusDot { animation: none; } .brandName::after { animation: none; } }
+@media (max-width: 1280px) { .statusText { display: none; } }
+@media (max-width: 1100px) { .status { display: none; } }
+
+.main, .footerGrid, .footerCopy { max-width: 1180px; }
+@media (max-width: 520px) {
+  .nav { padding: 0 0.75rem; gap: 0.35rem; }
+  .brand { letter-spacing: 0.08em; font-size: 0.92rem; gap: 0.4rem; }
+  .brand svg { width: 24px; height: 24px; }
+  .langSwitcher { margin-left: 0; padding-left: 0.25rem; }
+}
+
+/* ─── Schéma de verre : en-tête ──────────────────────────────────────────── */
+.shell { position: relative; z-index: 1; }
+.header { position: sticky; top: 0; z-index: 100; background: transparent; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0.7rem 1rem 0; }
+.nav { max-width: 1180px; height: 58px; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--glass-line); border-radius: 14px; box-shadow: var(--glass-shadow); padding: 0 0.7rem 0 1.1rem; }
+.brand { font-family: var(--font-display); text-transform: none; letter-spacing: -0.025em; font-weight: 700; font-size: 1.12rem; }
+.brandName::after { content: none; }
+.navLink, button.navLink { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 0.92rem; border-radius: 8px; color: var(--text) !important; }
+.navLink:hover, button.navLink:hover { background: var(--bg-hover); color: var(--text-heading) !important; }
+.footerHead { text-transform: none; }
+@media (max-width: 860px) { .header { padding: 0.5rem 0.6rem 0; } }
+
+/* Nom en mode terminal */
+.brand { gap: 0.55rem; }
+.brandName { font-family: var(--font-mono); font-weight: 500; text-transform: lowercase; letter-spacing: -0.03em; font-size: 1.1rem; }
+.brandName::after { content: '_'; margin-left: 0.04em; color: var(--signal); animation: brandBlink 1.1s steps(1) 0.4s 6 both; }
+@keyframes brandBlink { 0% { opacity: 0; } 1%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brandName::after { animation: none; opacity: 1; } }
+
+/* Effets « code » : le curseur du J clignote, plus vite au survol ; le soulignement du nom reste affiché */
+.brand svg rect { animation: cursorBlink 1.1s steps(1) 0.5s 8 backwards; }
+.brand:hover svg rect, .brand:focus-visible svg rect { animation: cursorBlink 0.6s steps(1) infinite; }
+.brandName::after { animation: cursorBlink 1.1s steps(1) 0.4s 6 backwards; }
+.brand:hover .brandName::after { animation: cursorBlink 0.6s steps(1) infinite; }
+@keyframes cursorBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brand svg rect, .brand:hover svg rect, .brandName::after, .brand:hover .brandName::after { animation: none; opacity: 1; } }

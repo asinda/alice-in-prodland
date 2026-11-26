@@ -11,6 +11,14 @@ import {
 import { getFsPostRaw } from '../posts';
 import { generateAndDistribute } from '../agents/distribute';
 import { translatePost } from '../agents/translate';
+import { hidePostBySlug } from '../visibility';
+
+const LEVELS = ['debutant', 'intermediaire', 'avance'] as const;
+type Level = (typeof LEVELS)[number];
+/** Niveau saisi dans le formulaire : une valeur inconnue ou vide revient à « non renseigné ». */
+function levelOf(v: FormDataEntryValue | null): Level | undefined {
+  return (LEVELS as readonly string[]).includes(String(v)) ? (v as Level) : undefined;
+}
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -27,7 +35,7 @@ export async function actionCreatePost(_: unknown, formData: FormData) {
 
   if (!title) return { error: 'Le titre est requis.' };
 
-  const post = createPost({ slug: slugify(title), title, excerpt, content, type, tags, status: 'draft', publishedAt: null });
+  const post = createPost({ slug: slugify(title), title, excerpt, content, type, tags, level: levelOf(formData.get('level')), status: 'draft', publishedAt: null });
 
   revalidatePath('/admin/posts');
   redirect(`/admin/posts/${post.id}`);
@@ -44,7 +52,7 @@ export async function actionUpdatePost(_: unknown, formData: FormData) {
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
 
   if (!title) return { error: 'Le titre est requis.' };
-  updatePost(id, { title, excerpt, content, type, tags });
+  updatePost(id, { title, excerpt, content, type, tags, level: levelOf(formData.get('level')) });
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
   return { success: true };
@@ -56,7 +64,8 @@ export async function actionPublishPost(id: string) {
   if (!post) return;
   publishPost(id);
   const published = getPostById(id)!;
-  await generateAndDistribute(published);
+  // Un article déjà diffusé (masqué puis republié) n'est pas reposté une seconde fois sur les réseaux
+  if (published.integrations.linkedin.status !== 'success') await generateAndDistribute(published);
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
   revalidatePath('/blog');
@@ -121,4 +130,12 @@ export async function actionImportFsPost(slug: string) {
 
   revalidatePath('/admin/posts');
   redirect(`/admin/posts/${post.id}`);
+}
+
+/** Masque un article (fichier ou base) sans le supprimer. Il reste dans l'administration et peut être republié ou programmé. */
+export async function actionHidePost(slug: string): Promise<void> {
+  await requireAdmin();
+  hidePostBySlug(String(slug));
+  revalidatePath('/admin/posts');
+  revalidatePath('/', 'layout');
 }

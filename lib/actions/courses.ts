@@ -5,7 +5,7 @@ import { requireAdmin } from '../require-admin';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import {
-  createCourse, updateCourse, deleteCourse, publishCourse, getCourseById,
+  createCourse, updateCourse, deleteCourse, publishCourse, unpublishCourse, getCourseById,
   addLesson, updateLesson, deleteLesson,
 } from '../db';
 import { postToLinkedIn } from '../integrations/linkedin';
@@ -77,10 +77,21 @@ export async function actionPublishCourse(id: string) {
   const course = getCourseById(id);
   if (!course) return;
   publishCourse(id);
-  await pushIntegrations(course);
+  // Un cours déjà diffusé (masqué puis republié) n'est pas rediffusé une seconde fois
+  if (course.integrations.linkedin.status !== 'success') await pushIntegrations(course);
   revalidatePath('/admin/cours');
   revalidatePath(`/admin/cours/${id}`);
-  revalidatePath('/cours');
+  revalidatePath('/', 'layout');
+}
+
+/** Masque un cours sans le supprimer : il disparaît du site (liste, pages, plan du site) mais reste éditable dans l'administration. */
+export async function actionHideCourse(id: string) {
+  await requireAdmin();
+  if (!getCourseById(id)) return;
+  unpublishCourse(id);
+  revalidatePath('/admin/cours');
+  revalidatePath(`/admin/cours/${id}`);
+  revalidatePath('/', 'layout');
 }
 
 export async function actionRepushCourseIntegrations(id: string) {

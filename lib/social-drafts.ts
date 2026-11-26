@@ -12,6 +12,8 @@ export interface SocialDraft {
   url: string
   imageUrl: string
   /** Textes générés par l'IA, modifiables avant approbation */
+  /** Teaser LinkedIn (absent des anciens brouillons : modèle simple utilisé) */
+  linkedinTeaser?: string
   instagramCaption: string
   youtubePost: string
   status: DraftStatus

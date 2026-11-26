@@ -3,6 +3,7 @@ title: "Claude Code dans un workflow DevOps : ce que ça change vraiment"
 date: "2026-05-06"
 excerpt: "J'utilise Claude Code depuis 3 mois dans mon quotidien SRE. Voici ce qui m'a surpris, ce que ça remplace, et ce que ça ne remplacera jamais   avec des exemples concrets sur des pipelines GitLab, des configs Kubernetes, et du Terraform."
 tags: ["claude-code", "devops", "SRE", "automatisation", "AI", "outils"]
+level: "intermediaire"
 ---
 
 Je suis sceptique par défaut avec les outils "IA pour dev". Trop de promesses, trop de demos sur des hello world. Alors quand j'ai commencé à utiliser Claude Code, je m'y suis mis sans attentes   juste pour voir.

@@ -43,6 +43,8 @@ export interface DbPost {
   excerptEn?: string;
   contentEn?: string;
   tags: string[];
+  /** Niveau technique, facultatif (affiché en filtre sur le blog). */
+  level?: 'debutant' | 'intermediaire' | 'avance';
   type: ContentType;
   status: Status;
   publishedAt: string | null;
@@ -179,6 +181,11 @@ export function deleteCourse(id: string): void {
 
 export function publishCourse(id: string): DbCourse {
   return updateCourse(id, { status: 'published', publishedAt: now() });
+}
+
+/** Retire un cours du site sans le supprimer (brouillon). */
+export function unpublishCourse(id: string): DbCourse {
+  return updateCourse(id, { status: 'draft', publishedAt: null });
 }
 
 // ─── Lessons ─────────────────────────────────────────────────────────────────

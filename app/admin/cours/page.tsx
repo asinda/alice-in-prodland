@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { getCourses } from '../../../lib/db';
 import type { Status } from '../../../lib/db';
-import { actionPublishCourse, actionDeleteCourse } from '../../../lib/actions/courses';
+import { actionPublishCourse, actionHideCourse, actionDeleteCourse } from '../../../lib/actions/courses';
+import { getSchedule } from '../../../lib/schedule';
+import SchedulePostForm from '../../../components/admin/SchedulePostForm';
 import AdminFilterBar from '../../../components/AdminFilterBar';
 import styles from '../../../styles/Admin.module.css';
 
@@ -27,11 +29,16 @@ export default async function AdminCours({
     );
   }
 
+  const scheduled = new Map(getSchedule().filter(e => e.status === 'pending' && e.kind === 'course').map(e => [e.slug, e]));
+
   return (
     <>
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}><span>◈</span> Cours</h1>
-        <Link href="/admin/cours/new" className={styles.btnPrimary}>+ Nouveau cours</Link>
+        <h1 className={styles.pageTitle}>Cours</h1>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <Link href="/admin/obsidian" className={styles.btnSecondary}>Importer des notes</Link>
+          <Link href="/admin/cours/new" className={styles.btnPrimary}>+ Nouveau cours</Link>
+        </div>
       </div>
 
       <AdminFilterBar q={q} status={status} />
@@ -63,8 +70,8 @@ export default async function AdminCours({
                   {course.lessons.length} leçon{course.lessons.length !== 1 ? 's' : ''}
                 </td>
                 <td>
-                  <span className={`${styles.badge} ${course.status === 'published' ? styles.badgePublished : styles.badgeDraft}`}>
-                    {course.status}
+                  <span className={`${styles.badge} ${course.status === 'published' ? styles.badgePublished : styles.badgeDraft}`} title={course.status === 'published' ? undefined : 'Invisible sur le site : brouillon ou cours masqué'}>
+                    {course.status === 'published' ? 'en ligne' : 'hors ligne'}
                   </span>
                 </td>
                 <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
@@ -73,9 +80,21 @@ export default async function AdminCours({
                 <td>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <Link href={`/admin/cours/${course.id}`} className={styles.btnSecondary}>Éditer</Link>
-                    {course.status === 'draft' && (
-                      <form action={actionPublishCourse.bind(null, course.id)} style={{ display: 'inline' }}>
-                        <button type="submit" className={styles.btnGreen}>Publier</button>
+                    {course.status === 'draft' ? (
+                      <>
+                        <form action={actionPublishCourse.bind(null, course.id)} style={{ display: 'inline' }}>
+                          <button type="submit" className={styles.btnGreen}>Publier</button>
+                        </form>
+                        <SchedulePostForm
+                          slug={course.slug}
+                          kind="course"
+                          scheduled={scheduled.get(course.slug) ? { id: scheduled.get(course.slug)!.id, scheduledAt: scheduled.get(course.slug)!.scheduledAt } : undefined}
+                          compact
+                        />
+                      </>
+                    ) : (
+                      <form action={actionHideCourse.bind(null, course.id)} style={{ display: 'inline' }}>
+                        <button type="submit" className={styles.btnSecondary} title="Retire le cours du site sans le supprimer">Masquer</button>
                       </form>
                     )}
                     <form action={actionDeleteCourse.bind(null, course.id)} style={{ display: 'inline' }}>

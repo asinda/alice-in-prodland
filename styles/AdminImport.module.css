@@ -1,0 +1,34 @@
+.form { display: grid; gap: 0.8rem; max-width: 40rem; padding: 1.1rem; background: var(--glass); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid var(--glass-line); border-radius: 16px; box-shadow: var(--glass-shadow); }
+.heading { margin: 0; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.02em; color: var(--text-heading); }
+.lead { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+.field { display: grid; gap: 0.3rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); }
+.field input, .field textarea, .field select { font: inherit; font-size: 0.9rem; color: var(--text-heading); background: color-mix(in srgb, var(--text-heading) 5%, transparent); border: 1px solid var(--border); border-radius: 9px; padding: 0.5rem 0.65rem; width: 100%; }
+.field textarea { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.6; resize: vertical; }
+.target { display: flex; flex-wrap: wrap; gap: 1rem; border: 0; padding: 0; margin: 0; font-size: 0.88rem; color: var(--text); }
+.target legend { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+.target label { display: flex; gap: 0.4rem; align-items: center; }
+.error { margin: 0; color: var(--accent-red); font-size: 0.85rem; }
+.btn { justify-self: start; min-height: 38px; padding: 0 1.2rem; font: inherit; font-weight: 600; color: var(--on-signal); background: var(--signal); border: 0; border-radius: 10px; cursor: pointer; }
+.btn:disabled { opacity: 0.6; cursor: progress; }
+
+.bar { display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; margin: 0 0 1rem; padding: 0.8rem 1rem; background: var(--glass); border: 1px solid var(--glass-line); border-radius: 14px; }
+.bar form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin: 0; }
+.bar select, .bar input { font: inherit; font-size: 0.86rem; color: var(--text-heading); background: color-mix(in srgb, var(--text-heading) 5%, transparent); border: 1px solid var(--border); border-radius: 9px; padding: 0.4rem 0.6rem; }
+.bar button { min-height: 36px; padding: 0 1rem; font: inherit; font-size: 0.86rem; font-weight: 600; color: var(--on-signal); background: var(--signal); border: 0; border-radius: 9px; cursor: pointer; }
+.bar .quiet { color: var(--text-heading); background: transparent; border: 1px solid var(--border); }
+.hint { font-size: 0.8rem; color: var(--text-muted); }
+.section { margin-top: 2rem; }
+
+/* Publier plus tard */
+.sched { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.schedChip { font-family: var(--font-mono); font-size: 0.72rem; color: var(--signal); border: 1px solid currentColor; border-radius: 6px; padding: 0.15rem 0.5rem; text-transform: capitalize; }
+.schedLink { background: none; border: 0; padding: 0; font: inherit; font-size: 0.8rem; color: var(--text-muted); text-decoration: underline; cursor: pointer; }
+.schedDetails, .schedDetailsCompact { font-size: 0.86rem; }
+.schedDetails summary, .schedDetailsCompact summary { cursor: pointer; font-weight: 600; color: var(--signal); }
+.schedRow { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
+.schedRow input { font: inherit; font-size: 0.86rem; color: var(--text-heading); background: color-mix(in srgb, var(--text-heading) 5%, transparent); border: 1px solid var(--border); border-radius: 9px; padding: 0.4rem 0.6rem; }
+.schedRow button { min-height: 34px; padding: 0 0.9rem; font: inherit; font-size: 0.84rem; font-weight: 600; color: var(--on-signal); background: var(--signal); border: 0; border-radius: 9px; cursor: pointer; }
+.schedRow button:disabled { opacity: 0.5; cursor: not-allowed; }
+.schedHint { margin: 0.4rem 0 0; font-size: 0.76rem; color: var(--text-muted); line-height: 1.4; }
+.schedError { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--accent-red); }
+.schedOk { margin: 0.4rem 0 0; font-size: 0.8rem; color: var(--accent-green); }

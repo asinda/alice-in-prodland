@@ -5,52 +5,132 @@
   "nav": {
     "blog": "blog",
     "courses": "cours",
-    "about": "about",
-    "github": "github"
+    "about": "à propos",
+    "github": "github",
+    "categories": "rubriques",
+    "contact": "contact",
+    "home": "accueil",
+    "library": "bibliothèque",
+    "allTopics": "Toutes les rubriques",
+    "glossary": "glossaire"
   },
   "home": {
     "whoami": "alice — SRE / DevOps architect",
     "mission1": "Survivre en production, apprendre de chaque incident,",
     "mission2": "et documenter les rabbit holes pour les prochains.",
     "topics": "kubernetes/  SRE/  CI-CD/  postmortems/  certifications/",
-    "featured": "Article récent",
-    "recent": "Articles récents",
+    "featured": "À la une",
+    "recent": "Dernières publications",
     "readMore": "Lire l'article →",
-    "viewAll": "Voir tous les articles →",
+    "viewAll": "Voir toutes les publications →",
     "readTime": "min de lecture",
-    "h1": "alice-in-prodland : blog SRE / DevOps"
+    "h1": "Jambo : le blog et les cours SRE/DevOps",
+    "heroTitle": "La production,<br></br>vue <b>en coupe.</b>",
+    "heroLead": "Le blog et les cours d'une ingénieure SRE : Kubernetes, CI/CD, observabilité, post-mortems. Des schémas, des commandes, des pannes réelles.",
+    "ctaPosts": "Explorer les publications",
+    "ctaAbout": "Qui écrit ici",
+    "pickTitle": "Fil des articles",
+    "all": "Tout",
+    "count": "{n, plural, =0 {Aucun article} one {# article} other {# articles}}",
+    "empty": "Rien ne correspond. Essaie un autre mot ou retire le filtre.",
+    "latest": "Dernier article",
+    "search": "Chercher dans les articles",
+    "startTitle": "Par où commencer ?",
+    "startLead": "Choisis ton point d'entrée, je filtre les articles pour toi.",
+    "pathK8sTitle": "Je débute avec Kubernetes",
+    "pathK8sText": "Les commandes et les pièges, sans jargon inutile.",
+    "pathSreTitle": "Je veux comprendre la prod",
+    "pathSreText": "Incidents, post-mortems et monitoring racontés pour de vrai.",
+    "pathDevopsTitle": "Je veux tout automatiser",
+    "pathDevopsText": "CI/CD, infrastructure as code : les outils qui font gagner du temps.",
+    "mapTitle": "La carte du blog",
+    "lineK8s": "Kubernetes",
+    "lineSre": "SRE et incidents",
+    "lineAuto": "Automatisation et IA",
+    "lineData": "Plateformes et données",
+    "legend": "Lignes",
+    "hub": "Correspondance : l’article est sur plusieurs lignes",
+    "beginTitle": "Tu débutes ?",
+    "beginText": "Prends la ligne Kubernetes, première station :",
+    "ctaContact": "Un projet IA ? Parlons-en",
+    "topicsTitle": "Secteurs",
+    "topicsLead": "Neuf angles pour explorer le sujet. Choisis celui qui te ressemble.",
+    "categoryEmpty": "Pas encore d'article dans cette rubrique. Les prochains arrivent : abonne-toi pour ne pas les rater.",
+    "related": "À lire ensuite",
+    "bandTitle": "Besoin d'aide pour un projet d'IA ?",
+    "bandText": "Je conseille des équipes sur le choix des cas d'usage, l'intégration et la mise en production, avec un cadre clair de sécurité et de coûts. Premier échange de 30 minutes, sans engagement.",
+    "bandCta": "Échanger sur votre projet",
+    "nlTitle": "Recevoir les nouvelles publications",
+    "ctaTopics": "Découvrir les domaines d'expertise",
+    "diagramAria": "Schéma : une requête traverse la recherche documentaire, le modèle de langage et des outils, avant la réponse. Le tout est supervisé par des traces, des coûts et des garde-fous.",
+    "dgRequest": "Requête",
+    "dgRetrieve": "Recherche (RAG)",
+    "dgModel": "Modèle",
+    "dgTools": "Outils et API",
+    "dgAnswer": "Réponse",
+    "dgGuard": "Traces · coûts · garde-fous · évaluations",
+    "viewAllShort": "Voir toutes les publications",
+    "loadMore": "Afficher {n, plural, one {# article de plus} other {# articles de plus}}",
+    "searchHero": "Rechercher dans {n} articles…",
+    "bootIndexed": "{n, plural, one {# article indexé} other {# articles indexés}}",
+    "bootLatest": "dernière publication : {date}",
+    "bootSearch": "recherche prête · touche /",
+    "techLabel": "Au programme",
+    "teleArticles": "Articles",
+    "teleCourses": "Cours",
+    "teleLessons": "Leçons",
+    "teleLatest": "Dernière publication",
+    "journalTitle": "Dernières publications",
+    "modulesTitle": "Modules de formation",
+    "modulesCount": "{n, plural, one {# actif} other {# actifs}}",
+    "modulesAll": "Voir tous les cours →",
+    "followText": "Un article de fond par semaine, directement dans votre boîte mail. Désinscription en un clic.",
+    "planLabel": "À la une",
+    "routeTitle": "Parcours conseillé",
+    "routeLead": "Quatre cours, dans cet ordre : les bases, le système, puis l’entretien."
   },
   "blog": {
-    "title": "blog",
-    "subtitle": "articles · Kubernetes, SRE, CI/CD, post-mortems",
+    "title": "Publications",
+    "subtitle": "Analyses et guides sur l'IA, l'architecture, l'automatisation, Kubernetes et la fiabilité.",
     "back": "← Retour au blog",
     "backAll": "← Tous les articles",
     "readTime": "min de lecture"
   },
   "courses": {
-    "title": "cours",
+    "title": "Cours",
     "subtitle": "Formations techniques DevOps / SRE / Platform Engineering",
     "back": "← Tous les cours",
     "lessons": "leçon",
     "lessonsPlural": "leçons",
-    "start": "Commencer la première leçon →",
+    "start": "Initialiser le module →",
     "lessonOf": "Leçon",
     "of": "/",
-    "end": "✓ Fin du cours"
+    "end": "✓ Fin du cours",
+    "lessonCount": "{n, plural, one {# leçon} other {# leçons}}",
+    "empty": "Aucun cours publié pour l'instant."
   },
   "footer": {
     "built": "Construit avec",
     "heart": "♥",
     "and": "et beaucoup trop de",
-    "sessions": "sessions kubectl debug",
+    "sessions": "sessions",
     "legal": "Mentions légales",
-    "privacy": "Confidentialité"
+    "privacy": "Confidentialité",
+    "tagline": "Un blog technique pour comprendre l'IA, l'architecture et l'exploitation en production, sans jargon inutile.",
+    "explore": "Explorer",
+    "follow": "Suivre",
+    "newsletter": "Newsletter",
+    "about": "Le site"
   },
   "a11y": {
     "skip": "Aller au contenu",
     "langLabel": "Changer de langue",
     "mainNav": "Navigation principale",
-    "newTab": "(ouvre un nouvel onglet)"
+    "newTab": "(ouvre un nouvel onglet)",
+    "theme": "Basculer entre thème clair et sombre",
+    "search": "Rechercher sur le site",
+    "menu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu"
   },
   "toc": {
     "title": "Table des matières",
@@ -60,5 +140,215 @@
     "copy": "Copier",
     "copied": "✓ Copié",
     "copyAria": "Copier le code"
+  },
+  "search": {
+    "open": "Rechercher",
+    "placeholder": "Chercher un article, un outil, une erreur…",
+    "empty": "Aucun résultat. Essaie un autre mot.",
+    "latest": "Derniers articles",
+    "results": "Résultats",
+    "close": "Fermer",
+    "keys": "↑ ↓ pour naviguer, Entrée pour ouvrir, Échap pour fermer"
+  },
+  "kind": {
+    "incident": "INCIDENT",
+    "guide": "GUIDE",
+    "analyse": "ANALYSE"
+  },
+  "status": {
+    "line": "En ligne · {n, plural, one {# article} other {# articles}} · dernier : {date}",
+    "nominal": "Systèmes nominaux"
+  },
+  "term": {
+    "label": "Terminal interactif : tape une commande ou clique une suggestion",
+    "input": "Commande",
+    "placeholder": "tape help…",
+    "try": "Essaie",
+    "whoami": "alice, SRE / architecte DevOps. Je documente ce qui casse en production.",
+    "help": "Commandes disponibles :",
+    "helpHelp": "help          cette aide",
+    "helpLs": "ls            lister les articles",
+    "helpOpen": "open <n>      ouvrir l'article n° n",
+    "helpGrep": "grep <mot>    chercher un mot",
+    "helpTags": "tags          voir les sujets",
+    "helpWhoami": "whoami        qui écrit ici",
+    "helpTheme": "theme <mode>  dark ou light",
+    "helpClear": "clear         vider l'écran",
+    "unknown": "commande introuvable : {cmd}. Tape help.",
+    "noMatch": "aucun résultat pour « {q} ».",
+    "openUsage": "usage : open <numéro>. Tape ls pour voir les numéros.",
+    "openNotFound": "article introuvable : {n}.",
+    "opening": "ouverture de {title}…",
+    "themeSet": "thème : {mode}",
+    "themeUsage": "usage : theme dark | theme light",
+    "grepUsage": "usage : grep <mot>"
+  },
+  "categories": {
+    "ia-llm": {
+      "name": "IA et LLM",
+      "desc": "Comprendre les modèles, leurs limites et ce que ça change en entreprise."
+    },
+    "agents": {
+      "name": "Agents IA",
+      "desc": "Agents, outils et protocoles : ce qui marche vraiment hors des démos."
+    },
+    "architecture": {
+      "name": "Architecture et intégration",
+      "desc": "Décisions d'architecture et intégration de l'IA dans les systèmes existants."
+    },
+    "api": {
+      "name": "API et développement",
+      "desc": "Appeler, exposer et fiabiliser des API : SDK, webhooks, typage."
+    },
+    "automatisation": {
+      "name": "Automatisation",
+      "desc": "n8n, Make, pipelines et infrastructure as code : automatiser sans fragiliser."
+    },
+    "rag": {
+      "name": "RAG et données",
+      "desc": "Recherche, embeddings et bases vectorielles pour des réponses fondées sur vos données."
+    },
+    "tutoriels": {
+      "name": "Tutoriels et guides",
+      "desc": "Pas à pas et aide-mémoire à appliquer tout de suite."
+    },
+    "transformation": {
+      "name": "Transformation IA en entreprise",
+      "desc": "Stratégie, gouvernance, conformité et retour sur investissement."
+    },
+    "ops": {
+      "name": "Fiabilité et opérations",
+      "desc": "Kubernetes, SRE, observabilité et post-mortems : faire tenir les systèmes."
+    }
+  },
+  "newsletter": {
+    "title": "Une analyse par semaine",
+    "text": "Un article de fond sur l'IA en entreprise, par e-mail. Pas de jargon, pas de spam.",
+    "label": "Adresse e-mail",
+    "placeholder": "toi@entreprise.com",
+    "button": "S'abonner",
+    "consent": "J'accepte de recevoir la newsletter. Je peux me désinscrire à tout moment.",
+    "done": "Merci, tu es inscrit(e).",
+    "error": {
+      "invalid": "Cette adresse e-mail ne semble pas valide.",
+      "consent": "Coche la case pour confirmer ton accord.",
+      "rate": "Trop de tentatives. Réessaie dans quelques minutes.",
+      "fail": "L'inscription a échoué. Réessaie plus tard."
+    }
+  },
+  "contact": {
+    "title": "Parlons de votre projet IA",
+    "lead": "Dites-moi où vous en êtes : le cas d'usage, les contraintes, le calendrier. Je réponds sous deux jours ouvrés.",
+    "name": "Nom",
+    "email": "E-mail professionnel",
+    "company": "Entreprise (facultatif)",
+    "need": "Votre besoin",
+    "needs": {
+      "audit": "Audit et stratégie IA",
+      "integration": "Intégration et automatisation",
+      "support": "Accompagnement et formation",
+      "other": "Autre ou pas encore défini"
+    },
+    "message": "Votre message",
+    "consent": "J'accepte que ces informations soient utilisées pour me répondre. Elles ne sont pas partagées.",
+    "send": "Envoyer",
+    "done": "Message envoyé. Je vous réponds sous deux jours ouvrés.",
+    "error": {
+      "invalid": "Vérifiez votre nom, votre e-mail et un message de 10 caractères minimum.",
+      "consent": "Cochez la case pour confirmer votre accord.",
+      "rate": "Trop d'envois récents. Réessayez plus tard.",
+      "fail": "L'envoi a échoué. Réessayez plus tard."
+    },
+    "sideTitle": "Comment ça se passe",
+    "side1": "Je lis votre message et je vous réponds par e-mail.",
+    "side2": "Si c'est pertinent, nous fixons un échange de 30 minutes, sans engagement.",
+    "side3": "Je vous dis honnêtement si et comment je peux vous aider, sinon vers qui vous tourner."
+  },
+  "level": {
+    "label": "Niveau technique",
+    "debutant": "Débutant",
+    "intermediaire": "Intermédiaire",
+    "avance": "Avancé"
+  },
+  "tools": {
+    "save": "Lire plus tard",
+    "saved": "Enregistré",
+    "share": "Partager",
+    "newTab": "(nouvel onglet)",
+    "email": "E-mail",
+    "copyLink": "Copier le lien",
+    "linkCopied": "Lien copié",
+    "top": "Retour en haut de page",
+    "breadcrumb": "Fil d'Ariane",
+    "callout": {
+      "note": "Note",
+      "tip": "Astuce",
+      "warning": "Attention",
+      "important": "Important"
+    }
+  },
+  "library": {
+    "title": "Ma bibliothèque",
+    "lead": "Vos articles à lire plus tard, votre historique et des suggestions selon ce que vous avez consulté.",
+    "saved": "À lire plus tard",
+    "savedEmpty": "Rien d'enregistré. Utilisez « Lire plus tard » sur un article.",
+    "history": "Historique",
+    "historyEmpty": "Aucun article consulté pour l'instant.",
+    "clear": "Effacer l'historique",
+    "forYou": "Pour vous",
+    "privacy": "Ces listes restent dans votre navigateur : elles ne sont pas envoyées à nos serveurs et disparaissent si vous effacez les données du site."
+  },
+  "glossary": {
+    "title": "Glossaire",
+    "lead": "Les termes de l'IA en entreprise, définis simplement.",
+    "index": "Aller à un terme"
+  },
+  "follow": {
+    "button": "Suivre",
+    "title": "Recevoir le prochain article",
+    "text": "Un article de fond par semaine sur l'IA en production, directement dans votre boîte mail.",
+    "p1": "Des pannes réelles et ce qu'elles enseignent",
+    "p2": "Des guides applicables le jour même",
+    "p3": "Désinscription en un clic, aucun démarchage",
+    "or": "Vous préférez un lecteur de flux ?",
+    "rss": "S'abonner par RSS",
+    "close": "Fermer",
+    "prompt": "Cet article vous a servi ? Recevez le suivant par e-mail.",
+    "dismiss": "Ne plus afficher"
+  },
+  "about": {
+    "role": "Ingénieure DevOps / SRE, plateformes cloud",
+    "meta": "Toulouse, France · 10+ ans en production",
+    "ctaContact": "Me contacter",
+    "ctaBlog": "Lire les publications",
+    "stack": "Compétences",
+    "path": "Parcours",
+    "contact": "Contact",
+    "newTab": "nouvel onglet",
+    "ctaCourses": "Voir les cours",
+    "nameStory": "Jambo veut dire « bonjour » en swahili. J'ai voulu un blog où l'on se sent accueilli, même quand le sujet est aussi technique que la production."
+  },
+  "shortcuts": {
+    "title": "Raccourcis clavier",
+    "search": "Rechercher",
+    "theme": "Basculer le thème",
+    "goHome": "Aller à l'accueil",
+    "goBlog": "Aller aux publications",
+    "goTopics": "Aller aux rubriques",
+    "goLibrary": "Aller à la bibliothèque",
+    "goGlossary": "Aller au glossaire",
+    "help": "Afficher cette aide",
+    "close": "Fermer"
+  },
+  "author": {
+    "role": "Ingénieure DevOps / SRE, plateformes cloud",
+    "bio": "Je documente ce qui casse en production, comment on le répare et ce que ça change pour l'IA, les API et l'automatisation.",
+    "about": "À propos",
+    "newTab": "nouvel onglet"
+  },
+  "route": {
+    "label": "Cours du parcours",
+    "lessons": "{n, plural, one {# leçon} other {# leçons}}",
+    "start": "Commencer le cours →"
   }
 }

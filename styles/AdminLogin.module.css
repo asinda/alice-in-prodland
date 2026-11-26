@@ -17,7 +17,7 @@
 }
 
 .header {
-  background: #1c2130;
+  background: var(--bg-hover);
   border-bottom: 1px solid var(--border);
   padding: 0.65rem 1rem;
   display: flex;
@@ -69,7 +69,7 @@
 .error {
   font-family: var(--font-mono);
   font-size: 0.82rem;
-  color: #f97583;
+  color: var(--accent-red);
   background: rgba(247, 117, 131, 0.08);
   border: 1px solid rgba(247, 117, 131, 0.2);
   border-radius: 6px;
@@ -78,7 +78,7 @@
 
 .btn {
   background: var(--accent);
-  color: #0d1117;
+  color: var(--bg);
   border: none;
   border-radius: 6px;
   padding: 0.65rem 1rem;
@@ -91,3 +91,5 @@
 
 .btn:hover:not(:disabled) { opacity: 0.85; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.theme { position: fixed; top: 1rem; right: 1rem; }

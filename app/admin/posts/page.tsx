@@ -3,8 +3,10 @@ import { getAllAdminPosts } from '../../../lib/posts';
 import type { Status, ContentType } from '../../../lib/db';
 import {
   actionPublishPost, actionUnpublishPost, actionDeletePost,
-  actionRepushPostIntegrations, actionImportFsPost,
+  actionRepushPostIntegrations, actionImportFsPost, actionHidePost,
 } from '../../../lib/actions/posts';
+import { getSchedule } from '../../../lib/schedule';
+import SchedulePostForm from '../../../components/admin/SchedulePostForm';
 import AdminFilterBar from '../../../components/AdminFilterBar';
 import styles from '../../../styles/Admin.module.css';
 
@@ -20,6 +22,7 @@ export default async function AdminPosts({
   const { q = '', status = '', type = '' } = await searchParams;
 
   let posts = getAllAdminPosts();
+  const scheduledBySlug = new Map(getSchedule().filter(e => e.status === 'pending').map(e => [e.slug, e]));
 
   if (status) {
     posts = posts.filter(p => {
@@ -45,7 +48,7 @@ export default async function AdminPosts({
   return (
     <>
       <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}><span>#</span> Posts & Tutoriels</h1>
+        <h1 className={styles.pageTitle}>Articles</h1>
         <Link href="/admin/posts/new" className={styles.btnPrimary}>+ Nouveau</Link>
       </div>
 
@@ -81,7 +84,7 @@ export default async function AdminPosts({
                       post
                     </td>
                     <td>
-                      <span className={`${styles.badge} ${styles.badgePublished}`}>published</span>
+                      <span className={`${styles.badge} ${styles.badgePublished}`}>en ligne</span>
                     </td>
                     <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       —
@@ -90,11 +93,18 @@ export default async function AdminPosts({
                       {formatDate(post.date)}
                     </td>
                     <td>
-                      <form action={actionImportFsPost.bind(null, post.slug)} style={{ display: 'inline' }}>
-                        <button type="submit" className={styles.btnSecondary} title="Importer dans la base pour pouvoir l'éditer">
-                          ↓ Importer & éditer
-                        </button>
-                      </form>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <form action={actionImportFsPost.bind(null, post.slug)} style={{ display: 'inline' }}>
+                          <button type="submit" className={styles.btnSecondary} title="Importer dans la base pour pouvoir l'éditer">
+                            ↓ Importer & éditer
+                          </button>
+                        </form>
+                        <form action={actionHidePost.bind(null, post.slug)} style={{ display: 'inline' }}>
+                          <button type="submit" className={styles.btnSecondary} title="Retire l'article du site sans le supprimer : il reste ici, éditable, et peut être republié ou programmé">
+                            Masquer
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -112,8 +122,8 @@ export default async function AdminPosts({
                     {post.type}
                   </td>
                   <td>
-                    <span className={`${styles.badge} ${post.status === 'published' ? styles.badgePublished : styles.badgeDraft}`}>
-                      {post.status}
+                    <span className={`${styles.badge} ${post.status === 'published' ? styles.badgePublished : styles.badgeDraft}`} title={post.status === 'published' ? undefined : 'Invisible sur le site : brouillon ou article masqué'}>
+                      {post.status === 'published' ? 'en ligne' : 'hors ligne'}
                     </span>
                   </td>
                   <td style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
@@ -131,13 +141,20 @@ export default async function AdminPosts({
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <Link href={`/admin/posts/${post.id}`} className={styles.btnSecondary}>Éditer</Link>
                       {post.status === 'draft' ? (
-                        <form action={actionPublishPost.bind(null, post.id!)} style={{ display: 'inline' }}>
-                          <button type="submit" className={styles.btnGreen}>Publier</button>
-                        </form>
+                        <>
+                          <form action={actionPublishPost.bind(null, post.id!)} style={{ display: 'inline' }}>
+                            <button type="submit" className={styles.btnGreen}>Publier</button>
+                          </form>
+                          <SchedulePostForm
+                            slug={post.slug}
+                            scheduled={scheduledBySlug.get(post.slug) ? { id: scheduledBySlug.get(post.slug)!.id, scheduledAt: scheduledBySlug.get(post.slug)!.scheduledAt } : undefined}
+                            compact
+                          />
+                        </>
                       ) : (
                         <>
                           <form action={actionUnpublishPost.bind(null, post.id!)} style={{ display: 'inline' }}>
-                            <button type="submit" className={styles.btnSecondary}>Dépublier</button>
+                            <button type="submit" className={styles.btnSecondary} title="Retire l'article du site sans le supprimer">Masquer</button>
                           </form>
                           <form action={actionRepushPostIntegrations.bind(null, post.id!)} style={{ display: 'inline' }}>
                             <button type="submit" className={styles.btnSecondary} title="Re-publier sur LinkedIn">in</button>

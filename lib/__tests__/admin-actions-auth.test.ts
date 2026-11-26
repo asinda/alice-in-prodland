@@ -17,9 +17,9 @@ const db = {
 }
 vi.mock('../db', async (orig) => ({ ...(await orig<typeof import('../db')>()), ...db }))
 
-// Tous les modules d'actions, sauf auth (login/logout sont publics par nature)
+// Tous les modules d'actions, sauf auth et leads (login, newsletter et contact sont publics par nature)
 const modules = import.meta.glob('../actions/*.ts') as Record<string, () => Promise<Record<string, unknown>>>
-const entries = Object.entries(modules).filter(([p]) => !p.endsWith('/auth.ts'))
+const entries = Object.entries(modules).filter(([p]) => !p.endsWith('/auth.ts') && !p.endsWith('/leads.ts'))
 
 beforeEach(() => vi.clearAllMocks())
 

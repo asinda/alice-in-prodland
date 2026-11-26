@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { login } from '../../../lib/actions/auth';
+import AdminThemeToggle from '../../../components/admin/AdminThemeToggle';
 import styles from '../../../styles/AdminLogin.module.css';
 
 export default function LoginPage() {
@@ -9,10 +10,11 @@ export default function LoginPage() {
 
   return (
     <div className={styles.wrapper}>
+      <div className={styles.theme}><AdminThemeToggle /></div>
       <div className={styles.box}>
         <div className={styles.header}>
           <span className={styles.prompt}>$</span>
-          <span className={styles.title}>admin@alice-in-prodland</span>
+          <span className={styles.title}>admin@jambo</span>
         </div>
         <form action={action} className={styles.form}>
           <label className={styles.label}>

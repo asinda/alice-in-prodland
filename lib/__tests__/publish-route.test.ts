@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server'
 
 vi.mock('@/lib/schedule', () => ({
   claimNextPending: vi.fn(),
+  hasPublishedSince: vi.fn(() => false),
   markPublished: vi.fn(),
   markFailed: vi.fn(),
 }))
@@ -11,6 +12,8 @@ vi.mock('@/lib/db', () => ({
   getPostBySlug: vi.fn(),
   publishPost: vi.fn(),
   createPost: vi.fn(),
+  getCourseBySlug: vi.fn(),
+  publishCourse: vi.fn(),
 }))
 vi.mock('@/lib/posts', () => ({ getFsPostRaw: vi.fn() }))
 vi.mock('@/lib/agents/distribute', () => ({
@@ -74,6 +77,31 @@ describe('POST /api/schedule/publish', () => {
     const body = await res.json()
     expect(body.status).toBe('published')
     expect(body.slug).toBe('mon-post')
+  })
+
+  it('met en ligne un cours programmé, sans diffusion sociale', async () => {
+    const { claimNextPending, markPublished } = await import('@/lib/schedule')
+    const { getCourseBySlug, publishCourse, getPostBySlug } = await import('@/lib/db')
+    const { generateAndDistribute } = await import('@/lib/agents/distribute')
+    // Les compteurs d'appels des tests précédents sont remis à zéro pour pouvoir vérifier « jamais appelé »
+    vi.mocked(generateAndDistribute).mockClear()
+    vi.mocked(getPostBySlug).mockClear()
+    vi.mocked(claimNextPending).mockReturnValue({
+      id: 'sched-c', slug: 'mon-cours', source: 'db', kind: 'course', scheduledAt: '2026-01-01T09:00:00Z', status: 'pending',
+    })
+    vi.mocked(getCourseBySlug).mockReturnValue({
+      id: 'c1', slug: 'mon-cours', title: 'Mon cours', description: '', tags: [], status: 'draft', publishedAt: null,
+      gumroadUrl: '', lessons: [], integrations: { linkedin: { status: 'idle' }, gumroad: { status: 'idle' }, tiktok: { status: 'idle' }, instagram: { status: 'idle' }, youtube: { status: 'idle' } },
+      createdAt: '', updatedAt: '',
+    })
+    const { POST } = await import('@/app/api/schedule/publish/route')
+    const res = await POST(makeRequest('secret-de-test-32-caracteres-min'))
+    const body = await res.json()
+    expect(body).toEqual({ status: 'published_course', slug: 'mon-cours' })
+    expect(vi.mocked(publishCourse)).toHaveBeenCalledWith('c1')
+    expect(vi.mocked(markPublished)).toHaveBeenCalledWith('sched-c')
+    expect(vi.mocked(generateAndDistribute)).not.toHaveBeenCalled()
+    expect(vi.mocked(getPostBySlug)).not.toHaveBeenCalled()
   })
 
   it('importe un post FS introuvable en DB, puis le publie', async () => {

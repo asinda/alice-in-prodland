@@ -27,11 +27,11 @@ export default function ReadingProgress() {
       aria-valuemax={100}
       style={{
         position: 'fixed',
-        top: '56px',
+        top: 0,
         left: 0,
         height: '2px',
         width: `${progress}%`,
-        background: 'linear-gradient(90deg, var(--accent-green), var(--accent))',
+        background: 'var(--signal)',
         zIndex: 200,
         transition: 'width 0.08s linear',
         pointerEvents: 'none',

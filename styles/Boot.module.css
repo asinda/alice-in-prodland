@@ -1,0 +1,22 @@
+.boot { margin: 0 0 1.4rem; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.7; color: var(--text-muted); }
+.line { display: flex; align-items: center; margin: 0; min-height: 1.7em; }
+
+/* Les lignes sont tapées : la largeur passe de 0 à n caractères, par pas d'un caractère. */
+.typed { display: inline-block; overflow: hidden; white-space: nowrap; width: 0; animation: type var(--t) steps(var(--n)) var(--d) forwards; }
+@keyframes type { to { width: calc(var(--n) * 1ch); } }
+
+.line[data-prompt='true'] { color: var(--text-heading); }
+.line[data-prompt='true'] .typed::before { content: '$ '; color: var(--accent-green); }
+.line:not([data-prompt='true']) .typed::first-letter { color: var(--accent-green); }
+
+.caret { display: inline-block; width: 0.55em; height: 1.05em; margin-left: 0.25em; background: var(--signal); opacity: 0; animation: caret 1s steps(1) var(--c) 8 both; }
+@keyframes caret { 0% { opacity: 0; } 1%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .typed { width: auto; animation: none; }
+  .caret { display: none; }
+}
+
+/* Déjà joué dans cette session : les lignes s'affichent directement, le curseur clignote brièvement */
+.boot[data-seen='true'] .typed { animation: none; width: calc(var(--n) * 1ch); }
+.boot[data-seen='true'] .caret { animation-delay: 0.2s; animation-iteration-count: 3; }

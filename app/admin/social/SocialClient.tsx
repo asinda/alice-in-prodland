@@ -9,6 +9,9 @@ const area = { width: '100%', minHeight: 110, background: '#020617', color: '#e2
 const label = { color: '#94a3b8', fontSize: '0.8rem', display: 'block', margin: '0.75rem 0 0.25rem' } as const
 
 function DraftCard({ draft }: { draft: SocialDraft }) {
+  const [li, setLi] = useState(draft.linkedinTeaser ?? `${draft.title}
+
+${draft.excerpt}`)
   const [ig, setIg] = useState(draft.instagramCaption)
   const [yt, setYt] = useState(draft.youtubePost)
   const [error, setError] = useState<string | null>(null)
@@ -16,7 +19,7 @@ function DraftCard({ draft }: { draft: SocialDraft }) {
 
   const approve = () => startTransition(async () => {
     setError(null)
-    const res = await actionApproveDraft(draft.id, ig, yt)
+    const res = await actionApproveDraft(draft.id, li, ig, yt)
     if (res.error) setError(res.error)
   })
   const reject = () => startTransition(async () => { await actionRejectDraft(draft.id) })
@@ -28,8 +31,17 @@ function DraftCard({ draft }: { draft: SocialDraft }) {
         {draft.url} {draft.status === 'failed' && <span style={{ color: '#f87171' }}> · échec précédent : {draft.error}</span>}
       </p>
 
-      <span style={label}>LinkedIn (modèle automatique : titre + extrait + lien)</span>
-      <div style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>{draft.title}<br />{draft.excerpt}</div>
+      <label style={label} htmlFor={`li-${draft.id}`}>Teaser LinkedIn ({li.length}/1300 conseillés)</label>
+      <textarea id={`li-${draft.id}`} style={{ ...area, minHeight: 150 }} value={li} onChange={e => setLi(e.target.value)} />
+      <div aria-label="Aperçu LinkedIn" style={{ marginTop: '0.5rem', background: '#fff', color: '#111', borderRadius: 8, padding: '0.75rem', maxWidth: 520, fontSize: '0.85rem' }}>
+        <div style={{ whiteSpace: 'pre-wrap', marginBottom: '0.5rem' }}>
+          {li.length > 210 ? `${li.slice(0, 210).trimEnd()}… voir plus` : li}
+        </div>
+        <div style={{ border: '1px solid #ddd', borderRadius: 6, padding: '0.5rem', background: '#f3f2ef' }}>
+          <strong>{draft.title}</strong>
+          <div style={{ color: '#666', fontSize: '0.75rem' }}>{draft.url}</div>
+        </div>
+      </div>
 
       <label style={label} htmlFor={`ig-${draft.id}`}>Légende Instagram ({ig.length}/2200)</label>
       <textarea id={`ig-${draft.id}`} style={area} value={ig} onChange={e => setIg(e.target.value)} />

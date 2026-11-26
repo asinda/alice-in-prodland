@@ -1,0 +1,39 @@
+.page { max-width: 860px; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: clamp(1.5rem, 5vw, 3.5rem); align-items: start; margin-bottom: 4rem; }
+.name { font-family: var(--font-display); font-weight: 700; font-size: clamp(2.2rem, 5vw, 3.4rem); letter-spacing: -0.04em; line-height: 1.02; color: var(--text-heading); margin: 0 0 0.6rem; }
+.role { font-size: 1.15rem; font-weight: 600; color: var(--text-heading); margin: 0 0 0.2rem; }
+.meta { color: var(--text-muted); margin: 0 0 1.6rem; font-size: 0.95rem; }
+.bio { max-width: 38rem; margin-bottom: 1.8rem; }
+.bio p { margin: 0 0 1rem; font-size: 1.08rem; line-height: 1.7; color: var(--text); }
+.portrait { width: min(280px, 36vw); height: auto; border-radius: var(--r); border: 1px solid var(--border); object-fit: cover; }
+
+.section { margin-bottom: 3.5rem; }
+.h2 { font-size: 1.4rem; letter-spacing: -0.03em; margin: 0 0 1.1rem; }
+
+.stack { margin: 0; border-top: 1px solid var(--border); }
+.stackRow { display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: 1rem; padding: 0.85rem 0; border-bottom: 1px solid var(--border); }
+.stackRow dt { font-weight: 650; color: var(--text-heading); }
+.stackRow dd { margin: 0; color: var(--text); }
+
+.timeline { list-style: none; margin: 0; padding: 0 0 0 1.4rem; border-left: 2px solid var(--border); display: grid; gap: 1.5rem; }
+.step { position: relative; display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 1rem; }
+.step::before { content: ''; position: absolute; left: calc(-1.4rem - 6px); top: 0.45rem; width: 10px; height: 10px; border-radius: 50%; background: var(--signal); border: 2px solid var(--bg); }
+.year { font-weight: 700; color: var(--signal); font-variant-numeric: tabular-nums; }
+.stepTitle { margin: 0 0 0.2rem; font-weight: 650; color: var(--text-heading); line-height: 1.35; }
+.stepDesc { margin: 0; color: var(--text-muted); font-size: 0.93rem; line-height: 1.55; }
+
+.links { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+.links li { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: 1rem; padding: 0.8rem 0; border-bottom: 1px solid var(--border); }
+.links span { color: var(--text-muted); }
+.links a { overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; }
+  .portrait { order: -1; width: 160px; }
+  .stackRow { grid-template-columns: 1fr; gap: 0.15rem; }
+  .step { grid-template-columns: 1fr; gap: 0.1rem; }
+  .links li { grid-template-columns: 1fr; gap: 0.1rem; }
+}
+
+.nameStory { margin: 0 0 1.6rem; padding: 0.8rem 1rem; max-width: 38rem; border-left: 3px solid var(--signal); background: var(--glass); font-size: 0.95rem; line-height: 1.6; color: var(--text); }

@@ -1,13 +1,13 @@
 const COPY = {
   fr: {
-    title: 'Alice in Prodland — en construction',
+    title: 'Jambo — en construction',
     kicker: 'Chute en cours…',
     h1: 'Le terrier est en travaux',
     p: "Je creuse un nouveau site : j'apprends en public et je partage ce que je découvre, terrier après terrier. Reviens vite, ça descend bientôt.",
     note: 'Prochainement : des parcours d’apprentissage SRE / DevOps.',
   },
   en: {
-    title: 'Alice in Prodland — under construction',
+    title: 'Jambo — under construction',
     kicker: 'Falling…',
     h1: 'The rabbit hole is under construction',
     p: "I'm digging a brand new site: I learn in public and share what I find, one rabbit hole at a time. Come back soon — the descent starts shortly.",

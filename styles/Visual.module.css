@@ -1,0 +1,26 @@
+/* Illustrations : traits fins, deux teintes (encre + vert discret), thémables par variables. */
+.cover { display: block; width: 100%; height: 100%; --cv-bg: #f4f6fa; --cv-line: #1d2433; --cv-grid: rgba(29, 36, 51, 0.07); --cv-accent: #2b4cff; }
+:global(html[data-theme='dark']) .cover { --cv-bg: #14171d; --cv-line: #c9d1e3; --cv-grid: rgba(201, 209, 227, 0.07); --cv-accent: #8fa3ff; }
+@media (prefers-color-scheme: dark) { :global(html:not([data-theme='light'])) .cover { --cv-bg: #14171d; --cv-line: #c9d1e3; --cv-grid: rgba(201, 209, 227, 0.07); --cv-accent: #8fa3ff; } }
+.coverBg { fill: var(--cv-bg); }
+.grid line { stroke: var(--cv-grid); stroke-width: 1; }
+.art { fill: none; stroke: var(--cv-line); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.accentFill { fill: var(--cv-accent); stroke: var(--cv-accent); fill-opacity: 0.22; }
+.accentLine { stroke: var(--cv-accent); stroke-width: 2.4; fill: none; }
+
+/* Schéma du hero */
+.hero { width: 100%; max-width: 440px; justify-self: center; height: auto; display: block; --h-line: #1d2433; --h-soft: #f4f6fa; --h-accent: #2b4cff; --h-navy: #0b1020; }
+:global(html[data-theme='dark']) .hero { --h-line: #c9d1e3; --h-soft: #15171c; --h-accent: #8fa3ff; --h-navy: #0f1630; }
+@media (prefers-color-scheme: dark) { :global(html:not([data-theme='light'])) .hero { --h-line: #c9d1e3; --h-soft: #15171c; --h-accent: #8fa3ff; --h-navy: #0f1630; } }
+.node { fill: var(--h-soft); stroke: var(--h-line); stroke-width: 1.4; }
+.nodeAccent { fill: var(--h-navy); stroke: var(--h-navy); }
+.nodeText { fill: var(--h-line); font: 600 15px var(--font-body); }
+.nodeTextAccent { fill: #fff; font: 600 15px var(--font-body); }
+.flow { fill: none; stroke: var(--h-accent); stroke-width: 2.4; stroke-dasharray: 6 6; animation: flow 1.6s linear infinite; }
+.bracket { fill: none; stroke: var(--h-line); stroke-width: 1.2; stroke-dasharray: 3 5; }
+.guard { fill: none; stroke: var(--h-accent); stroke-width: 1.4; }
+.guardText { fill: var(--h-line); font: 500 12px var(--font-body); }
+@keyframes flow { to { stroke-dashoffset: -24; } }
+@media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+
+.ticks { fill: none; stroke: var(--cv-line); stroke-width: 1.3; opacity: 0.45; }

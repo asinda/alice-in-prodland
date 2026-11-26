@@ -3,6 +3,7 @@ title: "Post-mortem : 4h d'indisponibilité à cause d'un index manquant"
 date: "2025-03-02"
 excerpt: "Comment une migration de base de données apparemment anodine a causé 4 heures de dégradation de service, et ce qu'on a changé pour que ça n'arrive plus jamais."
 tags: ["SRE", "postmortem", "postgresql", "incidents"]
+level: "debutant"
 ---
 
 **Sévérité** : P1  

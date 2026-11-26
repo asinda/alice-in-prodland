@@ -1,4 +1,4 @@
-# Alice in Prodland
+# Jambo
 
 Blog SRE / DevOps bilingue (FR/EN) avec CMS d'administration, cours en ligne et publication automatisée sur les réseaux sociaux.
 
@@ -11,7 +11,8 @@ Blog SRE / DevOps bilingue (FR/EN) avec CMS d'administration, cours en ligne et 
 - **i18n** : français (défaut) et anglais via `next-intl`, traduction assistée par IA.
 - **Admin** (`/admin`) : CRUD articles/cours, import de notes Obsidian, relecture IA, planification, statistiques.
 - **Diffusion** : LinkedIn, Instagram, YouTube, TikTok (légende), Gumroad ; image Open Graph générée (`/api/og/[slug]`).
-- **Publication planifiée** : workflow GitHub Actions (lun/mer/ven) appelant `POST /api/schedule/publish`.
+- **Publication planifiée** : 3 créneaux par semaine (lundi, mercredi, vendredi à 9h, heure de Paris). `/admin/schedule` propose « Planifier la semaine » (place automatiquement les articles prêts) ; un workflow GitHub Actions appelle `POST /api/schedule/publish` aux heures de publication.
+- **Teaser LinkedIn** : l'IA rédige un teaser (accroche, puces, question) ; vous le relisez, le modifiez et voyez un aperçu dans `/admin/social` avant publication. Un interrupteur permet la publication automatique sans validation.
 - **Mode maintenance** : `MAINTENANCE_MODE=true` avec cookie de prévisualisation.
 
 ## Stack

@@ -3,6 +3,7 @@ title: "MongoDB Ops Manager HA en production : replica sets, sharding et PBM   c
 date: "2026-04-14"
 excerpt: "18 mois à opérer MongoDB 8.0 avec Ops Manager sur une plateforme PaaS critique. Voici les vraies décisions d'architecture, les pièges du sharding, et pourquoi PBM a remplacé mongodump dans notre stratégie de backup."
 tags: ["mongodb", "devops", "SRE", "kubernetes", "databases"]
+level: "avance"
 ---
 
 Quand on m'a confié la responsabilité de la plateforme MongoDB en production, le cluster tournait en standalone avec des backups `mongodump` planifiés via cron. Fonctionnel. Fragile. Pas scalable.

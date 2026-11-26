@@ -3,6 +3,7 @@ title: "OpenSearch 3.3 : ce que ça change pour un opérateur de plateforme"
 date: "2026-05-05"
 excerpt: "J'opère OpenSearch en production depuis 3 ans   d'abord sur la plateforme ELK d'Airbus, maintenant sur une plateforme PaaS. Voici ce que la 3.3 change concrètement pour quelqu'un qui gère des clusters au quotidien."
 tags: ["opensearch", "devops", "SRE", "observabilité", "kubernetes"]
+level: "avance"
 ---
 
 Quand OpenSearch sort une mineure, je lis les release notes comme je lis un post-mortem : en cherchant ce qui va me toucher en production. La 3.3 sort début 2025 avec plusieurs annonces. Voici mon filtre opérateur.

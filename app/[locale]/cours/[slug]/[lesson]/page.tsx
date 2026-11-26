@@ -19,9 +19,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug, lesson: lessonSlug } = await params;
   const course = getCourseBySlug(slug);
-  const lesson = course?.lessons.find(l => l.slug === lessonSlug);
+  const lesson = course?.status === 'published' ? course.lessons.find(l => l.slug === lessonSlug) : undefined;
   if (!lesson) return {};
-  return { title: `${lesson.title} — ${course!.title} — alice-in-prodland` };
+  return { title: `${lesson.title} — ${course!.title} — Jambo` };
 }
 
 export default async function LessonPage(
@@ -52,7 +52,7 @@ export default async function LessonPage(
   const prevTrans = prev && courseTrans?.lessons?.[prev.slug];
   const nextTrans = next && courseTrans?.lessons?.[next.slug];
 
-  const contentHtml = String(
+  const rendered = String(
     await unified()
       .use(remarkParse)
       .use(remarkGfm)
@@ -63,6 +63,8 @@ export default async function LessonPage(
       .use(rehypeStringify)
       .process(contentSource)
   );
+  // Le premier <h1> du contenu répète le titre de la leçon : on l'écarte.
+  const contentHtml = rendered.replace(/^\s*<h1[^>]*>[\s\S]*?<\/h1>\s*/i, '');
 
   return (
     <>

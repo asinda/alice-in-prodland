@@ -3,6 +3,7 @@ title: "Monitoring ≠ Observabilité : construire la stack Prometheus + Grafana
 date: "2026-04-28"
 excerpt: "Tout le monde dit 'on a Grafana, donc on est observables'. Faux. Voici la différence réelle entre monitoring et observabilité, et comment construire une vraie stack des trois pilliers   métriques, logs, traces   avec les outils open source."
 tags: ["observabilité", "prometheus", "grafana", "SRE", "kubernetes", "devops"]
+level: "intermediaire"
 ---
 
 La phrase que j'entends le plus souvent lors des audits d'infrastructure : "on a Grafana, donc on a de l'observabilité". C'est faux, et la différence n'est pas sémantique   elle change ce qu'on est capable de faire pendant un incident.
