@@ -35,7 +35,7 @@ export async function prepareSocialDraft(post: DbPost): Promise<SocialDraft> {
   const existing = getOpenDraftForPost(post.id)
   if (existing) return existing
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   const url = `${siteUrl}/blog/${post.slug}`
 
   const [imageBuffer, content] = await Promise.all([
