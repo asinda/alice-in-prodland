@@ -2,6 +2,7 @@
 import { getSchedule } from '@/lib/schedule'
 import { getAllAdminPosts } from '@/lib/posts'
 import { getContentStatus } from '@/lib/content-status'
+import { getCourses } from '@/lib/db'
 import { getNotes } from '@/lib/notes'
 import Link from 'next/link'
 import { listDrafts } from '@/lib/social-drafts'
@@ -40,6 +41,7 @@ export default async function SchedulePage() {
         readyPosts={readyPosts}
         slots={nextPublicationSlots(12).map(d => d.toISOString())}
         notes={notes}
+        courses={getCourses().map(c => ({ slug: c.slug, title: c.title }))}
       />
     </>
   )

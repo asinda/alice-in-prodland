@@ -102,16 +102,17 @@ export async function actionPlanTopic(title: string, slotIso: string): Promise<{
 }
 
 /** Programme un article prêt à une date et une heure précises (heure de Paris). Refuse le passé et un jour déjà pris. */
-export async function actionScheduleAtLocal(slug: string, source: 'fs' | 'db', local: string): Promise<{ ok: boolean; error?: string }> {
+export async function actionScheduleAtLocal(slug: string, source: 'fs' | 'db', local: string, kind: 'post' | 'course' = 'post'): Promise<{ ok: boolean; error?: string }> {
   await requireAdmin();
   const when = parisLocalToUtc(String(local))
   if (!when) return { ok: false, error: 'Date ou heure invalide.' }
   if (when.getTime() <= Date.now()) return { ok: false, error: 'Choisissez une date et une heure à venir.' }
   const iso = when.toISOString()
   if (isSlotTaken(iso)) return { ok: false, error: 'Un article est déjà programmé ce jour-là. Déplacez-le d’abord, ou choisissez un autre jour.' }
-  addToSchedule(slug, source === 'db' ? 'db' : 'fs', iso)
-  setContentStatus(slug, { status: 'scheduled' })
+  addToSchedule(slug, source === 'db' ? 'db' : 'fs', iso, kind === 'course' ? 'course' : 'post')
+  if (kind !== 'course') setContentStatus(slug, { status: 'scheduled' })
   revalidatePath('/admin/schedule')
   revalidatePath('/admin/review')
+  revalidatePath('/admin/cours')
   return { ok: true }
 }

@@ -19,7 +19,7 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { slug, lesson: lessonSlug } = await params;
   const course = getCourseBySlug(slug);
-  const lesson = course?.lessons.find(l => l.slug === lessonSlug);
+  const lesson = course?.status === 'published' ? course.lessons.find(l => l.slug === lessonSlug) : undefined;
   if (!lesson) return {};
   return { title: `${lesson.title} — ${course!.title} — Jambo` };
 }

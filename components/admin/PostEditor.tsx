@@ -12,6 +12,7 @@ import { actionTechReview } from '../../lib/actions/review';
 import type { TechReviewOutput } from '../../lib/agents/techreview';
 import postStyles from '../../styles/Post.module.css';
 import admin from '../../styles/Admin.module.css';
+import SchedulePostForm from './SchedulePostForm';
 import styles from '../../styles/AdminEditor.module.css';
 
 type Level = '' | 'debutant' | 'intermediaire' | 'avance';
@@ -27,13 +28,15 @@ interface Props {
   post?: DbPost;
   /** Statut de relecture (content-status) : « unreviewed » tant que l'agent n'est pas passé. */
   reviewStatus?: string;
+  /** Mise en ligne programmée (article masqué qui sera publié automatiquement). */
+  scheduled?: { id: string; scheduledAt: string };
 }
 
 /**
  * Éditeur d'article en trois volets : Markdown, aperçu fidèle au site, inspecteur avec liste de contrôle avant publication.
  * Ctrl+S enregistre. Les agents existants (relecture technique, traduction) sont lancés depuis la liste de contrôle.
  */
-export default function PostEditor({ post, reviewStatus = 'unreviewed' }: Props) {
+export default function PostEditor({ post, reviewStatus = 'unreviewed', scheduled }: Props) {
   const isNew = !post;
   type SaveState = { error?: string; success?: boolean } | null;
   const saveAction = (isNew ? actionCreatePost : actionUpdatePost) as (prev: SaveState, form: FormData) => Promise<SaveState>;
@@ -133,13 +136,20 @@ export default function PostEditor({ post, reviewStatus = 'unreviewed' }: Props)
           )}
           {post && post.status === 'published' && (
             <form action={actionUnpublishPost.bind(null, post.id)}>
-              <button type="submit" className={styles.btn}>Dépublier</button>
+              <button type="submit" className={styles.btn} title="Retire l’article du site sans le supprimer : vous pourrez le republier ou le programmer">Masquer</button>
             </form>
           )}
         </div>
       </header>
 
       {state?.error && <p className={admin.formError}>{state.error}</p>}
+
+      {post && post.status === 'draft' && (
+        <div className={styles.offline}>
+          <span><b>Cet article est masqué</b> : il n’est pas visible sur le site.</span>
+          <SchedulePostForm slug={post.slug} scheduled={scheduled} disabled={dirty} />
+        </div>
+      )}
 
       <form id="post-form" ref={formRef} action={action} className={styles.panes}>
         {post && <input type="hidden" name="id" value={post.id} />}

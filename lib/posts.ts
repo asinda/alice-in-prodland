@@ -118,7 +118,8 @@ function readDbPosts(): PostMeta[] {
 export function getAllPosts(): PostMeta[] {
   const fsPosts = readFsPosts();
   const dbPosts = readDbPosts();
-  const dbSlugs = new Set(dbPosts.map(p => p.slug));
+  // Un article présent en base (même masqué) prend le dessus sur son fichier : c'est ce qui permet de masquer un article « .md ».
+  const dbSlugs = new Set(getPosts().map(p => p.slug));
   return [
     ...dbPosts,
     ...fsPosts.filter(p => !dbSlugs.has(p.slug)),
@@ -147,7 +148,7 @@ export function isSafeSlug(slug: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(slug);
 }
 
-export function getFsPostRaw(slug: string): { title: string; excerpt: string; content: string; tags: string[]; date: string } | null {
+export function getFsPostRaw(slug: string): { title: string; excerpt: string; content: string; tags: string[]; date: string; level?: Level } | null {
   if (!isSafeSlug(slug)) return null;
   const filePath = path.join(postsDir, `${slug}.md`);
   if (!fs.existsSync(filePath)) return null;
@@ -159,6 +160,7 @@ export function getFsPostRaw(slug: string): { title: string; excerpt: string; co
     content,
     tags: (data.tags as string[]) ?? [],
     date: (data.date as string) ?? new Date().toISOString(),
+    level: asLevel(data.level),
   };
 }
 
@@ -219,6 +221,9 @@ export async function getPost(slug: string): Promise<Post> {
       toc: extractToc(contentHtml),
     };
   }
+
+  // Masqué (brouillon en base) : introuvable pour le public, même si un fichier du même nom existe
+  if (dbPost) throw new PostNotFoundError(slug);
 
   // Fallback: filesystem post (cached)
   const cached = _fsPostCache.get(slug);

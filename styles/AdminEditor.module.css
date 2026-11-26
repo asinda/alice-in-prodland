@@ -53,3 +53,5 @@
 
 @media (max-width: 1200px) { .panes { grid-template-columns: minmax(0, 1fr) 290px; height: auto; } .panes > section:nth-child(2) { display: none; } .source { min-height: 55vh; } }
 @media (max-width: 800px) { .panes { grid-template-columns: 1fr; } }
+
+.offline { display: flex; flex-wrap: wrap; gap: 0.6rem 1.2rem; align-items: center; padding: 0.6rem 0.9rem; font-size: 0.88rem; color: var(--text-heading); background: var(--glass); border: 1px dashed var(--border); border-radius: 12px; }

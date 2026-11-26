@@ -49,3 +49,5 @@
 .topicForm button:disabled { opacity: 0.4; cursor: not-allowed; }
 
 @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } .cell { min-height: 0; } .preciseRow select { min-width: 0; width: 100%; } }
+
+.kindChip { display: inline-block; margin-right: 0.4rem; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 500; color: var(--signal); border: 1px solid currentColor; border-radius: 6px; padding: 0 0.35rem; vertical-align: 0.1em; }

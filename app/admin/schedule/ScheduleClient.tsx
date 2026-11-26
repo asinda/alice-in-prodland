@@ -39,13 +39,14 @@ export interface ScheduleNote { id: string; title: string; targetSlot?: string; 
  * le déplacer avec la liste, fixer une date et une heure précises, noter un sujet à venir sur un créneau libre.
  */
 export default function ScheduleClient({
-  schedule, posts, readyPosts, slots, notes,
+  schedule, posts, readyPosts, slots, notes, courses,
 }: {
   schedule: ScheduleEntry[]
   posts: { slug: string; title: string }[]
   readyPosts: AdminPostRow[]
   slots: string[]
   notes: ScheduleNote[]
+  courses: { slug: string; title: string }[]
 }) {
   const [isPending, startTransition] = useTransition()
   const [openSlot, setOpenSlot] = useState<string | null>(null)
@@ -59,9 +60,14 @@ export default function ScheduleClient({
   const pending = schedule.filter(e => e.status === 'pending')
   const entryAt = (slot: string) => pending.find(e => e.scheduledAt.slice(0, 10) === slot.slice(0, 10))
   const notesAt = (slot: string) => notes.filter(n => n.targetSlot && n.targetSlot.slice(0, 10) === slot.slice(0, 10) && n.status !== 'ecrit')
-  const titleOf = (slug: string) => posts.find(p => p.slug === slug)?.title ?? readyPosts.find(p => p.slug === slug)?.title ?? slug
+  const titleOf = (slug: string) => posts.find(p => p.slug === slug)?.title ?? readyPosts.find(p => p.slug === slug)?.title ?? courses.find(c => c.slug === slug)?.title ?? slug
+  const titleOfEntry = (e: ScheduleEntry) => (e.kind === 'course' ? courses.find(c => c.slug === e.slug)?.title ?? e.slug : titleOf(e.slug))
   const usedSlugs = new Set(pending.map(e => e.slug))
   const available = readyPosts.filter(p => !usedSlugs.has(p.slug))
+
+  // Programmations placées hors des créneaux habituels (date précise) : sans cette liste, elles seraient invisibles
+  const slotDays = new Set(slots.map(s => s.slice(0, 10)))
+  const others = pending.filter(e => !slotDays.has(e.scheduledAt.slice(0, 10)))
 
   const weeks = new Map<string, string[]>()
   for (const s of slots) {
@@ -121,6 +127,7 @@ export default function ScheduleClient({
 
       <details className={styles.precise}>
         <summary>Programmer à une date et une heure précises</summary>
+        <p className={styles.hint} style={{ margin: '0.5rem 0 0' }}>La mise en ligne est faite par la tâche planifiée du site, qui tourne le lundi, le mercredi et le vendredi vers 9 h 15 (une publication à la fois). L’article sortira donc à la première de ces occasions après la date choisie.</p>
         <div className={styles.preciseRow}>
           <label>Article prêt
             <select value={preciseSlug} onChange={e => setPreciseSlug(e.target.value)} disabled={available.length === 0}>
@@ -146,6 +153,48 @@ export default function ScheduleClient({
       </div>
 
       <p className={styles.hint}>Astuce : glissez un article programmé sur un autre créneau pour le déplacer, ou sur un article pour échanger leurs places.</p>
+
+
+      {others.length > 0 && (
+        <section className={styles.week} aria-label="Autres dates programmées">
+          <h2 className={styles.weekTitle}>Autres dates programmées</h2>
+          <div className={styles.grid}>
+            {others.map(entry => (
+              <div key={entry.id} className={`${styles.cell} ${styles.taken}`}>
+                <div className={styles.when}>
+                  <span className={styles.day}>{dayName(entry.scheduledAt)} {dayNum(entry.scheduledAt)}</span>
+                  <span className={styles.hour}>{hourOf(entry.scheduledAt)}</span>
+                </div>
+                <p className={styles.title}>{entry.kind === 'course' && <span className={styles.kindChip}>Cours</span>}{titleOfEntry(entry)}</p>
+                <details className={styles.edit}>
+                  <summary>Modifier</summary>
+                  <label>Déplacer vers
+                    <select defaultValue="" disabled={isPending} onChange={e => { if (e.target.value) move(entry.id, e.target.value) }}>
+                      <option value="" disabled>Choisir un créneau</option>
+                      {slots.map(s => <option key={s} value={s}>{fullLabel(s)}{entryAt(s) ? ' · occupé (échange)' : ''}</option>)}
+                    </select>
+                  </label>
+                  <label>Date et heure précises (Paris)
+                    <input
+                      type="datetime-local"
+                      defaultValue={utcToParisLocal(entry.scheduledAt)}
+                      disabled={isPending}
+                      onBlur={e => { if (e.target.value && e.target.value !== utcToParisLocal(entry.scheduledAt)) setExact(entry.id, e.target.value) }}
+                    />
+                  </label>
+                  <div className={styles.editLinks}>
+                    <span />
+                    <button className={styles.danger} disabled={isPending}
+                      onClick={() => startTransition(() => actionRemoveFromSchedule(entry.id, entry.slug))}>
+                      Annuler la programmation
+                    </button>
+                  </div>
+                </details>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {[...weeks.entries()].map(([key, weekSlots]) => (
         <section key={key} className={styles.week} aria-label={weekLabel(key)}>
@@ -177,7 +226,7 @@ export default function ScheduleClient({
 
                   {entry ? (
                     <>
-                      <p className={styles.title}>{titleOf(entry.slug)}</p>
+                      <p className={styles.title}>{entry.kind === 'course' && <span className={styles.kindChip}>Cours</span>}{titleOfEntry(entry)}</p>
                       <details className={styles.edit}>
                         <summary>Modifier</summary>
                         <label>Déplacer vers

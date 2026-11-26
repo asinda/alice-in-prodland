@@ -11,6 +11,7 @@ import {
 import { getFsPostRaw } from '../posts';
 import { generateAndDistribute } from '../agents/distribute';
 import { translatePost } from '../agents/translate';
+import { hidePostBySlug } from '../visibility';
 
 const LEVELS = ['debutant', 'intermediaire', 'avance'] as const;
 type Level = (typeof LEVELS)[number];
@@ -63,7 +64,8 @@ export async function actionPublishPost(id: string) {
   if (!post) return;
   publishPost(id);
   const published = getPostById(id)!;
-  await generateAndDistribute(published);
+  // Un article déjà diffusé (masqué puis republié) n'est pas reposté une seconde fois sur les réseaux
+  if (published.integrations.linkedin.status !== 'success') await generateAndDistribute(published);
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
   revalidatePath('/blog');
@@ -128,4 +130,12 @@ export async function actionImportFsPost(slug: string) {
 
   revalidatePath('/admin/posts');
   redirect(`/admin/posts/${post.id}`);
+}
+
+/** Masque un article (fichier ou base) sans le supprimer. Il reste dans l'administration et peut être republié ou programmé. */
+export async function actionHidePost(slug: string): Promise<void> {
+  await requireAdmin();
+  hidePostBySlug(String(slug));
+  revalidatePath('/admin/posts');
+  revalidatePath('/', 'layout');
 }

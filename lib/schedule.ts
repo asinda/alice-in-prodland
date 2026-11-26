@@ -7,6 +7,8 @@ export interface ScheduleEntry {
   id: string
   slug: string
   source: 'fs' | 'db'
+  /** Absent = article. « course » : la mise en ligne publie un cours. */
+  kind?: 'post' | 'course'
   scheduledAt: string
   status: 'pending' | 'processing' | 'published' | 'failed'
   claimedAt?: string
@@ -30,9 +32,9 @@ export function getSchedule(): ScheduleEntry[] {
   return readAll()
 }
 
-export function addToSchedule(slug: string, source: 'fs' | 'db', scheduledAt: string): ScheduleEntry {
+export function addToSchedule(slug: string, source: 'fs' | 'db', scheduledAt: string, kind: 'post' | 'course' = 'post'): ScheduleEntry {
   const entries = readAll()
-  const entry: ScheduleEntry = { id: cuid(), slug, source, scheduledAt, status: 'pending' }
+  const entry: ScheduleEntry = { id: cuid(), slug, source, scheduledAt, status: 'pending', ...(kind === 'course' ? { kind } : {}) }
   entries.push(entry)
   writeAll(entries)
   return entry

@@ -183,6 +183,11 @@ export function publishCourse(id: string): DbCourse {
   return updateCourse(id, { status: 'published', publishedAt: now() });
 }
 
+/** Retire un cours du site sans le supprimer (brouillon). */
+export function unpublishCourse(id: string): DbCourse {
+  return updateCourse(id, { status: 'draft', publishedAt: null });
+}
+
 // ─── Lessons ─────────────────────────────────────────────────────────────────
 
 export function addLesson(courseId: string, data: Omit<DbLesson, 'id'>): DbLesson {
