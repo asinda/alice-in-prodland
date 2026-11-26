@@ -9,6 +9,15 @@ import { getTranslation } from '../../../../lib/translations';
 import TableOfContents from '../../../../components/TableOfContents';
 import CopyCode from '../../../../components/CopyCode';
 import JsonLd from '../../../../components/JsonLd';
+import NewsletterForm from '../../../../components/NewsletterForm';
+import { getLocalizedPosts } from '../../../../lib/localized-posts';
+import { relatedPosts, categoriesOf } from '../../../../lib/categories';
+import AuthorBox from '../../../../components/AuthorBox';
+import FollowPrompt from '../../../../components/FollowPrompt';
+import Cover from '../../../../components/Cover';
+import { HistoryTracker, SaveButton, ShareBar, BackToTop } from '../../../../components/ArticleTools';
+import { applyCallouts } from '../../../../lib/callouts';
+import edit from '../../../../styles/Editorial.module.css';
 import { SITE_URL } from '../../../../lib/site';
 import styles from '../../../../styles/Post.module.css';
 
@@ -42,7 +51,7 @@ export async function generateMetadata(
 
   const path = `/blog/${slug}`;
   return {
-    title: `${title} — alice-in-prodland`,
+    title: `${title} — Jambo`,
     description,
     alternates: {
       canonical: `/${locale}${path}`,
@@ -69,6 +78,11 @@ export default async function BlogPost(
   const t = await getTranslations({ locale, namespace: 'blog' });
   const tToc = await getTranslations({ locale, namespace: 'toc' });
   const tCode = await getTranslations({ locale, namespace: 'code' });
+  const tHome = await getTranslations({ locale, namespace: 'home' });
+  const tCat = await getTranslations({ locale, namespace: 'categories' });
+  const tNl = await getTranslations({ locale, namespace: 'newsletter' });
+  const tTools = await getTranslations({ locale, namespace: 'tools' });
+  const tNav = await getTranslations({ locale, namespace: 'nav' });
 
   const dateLocale = locale === 'fr' ? 'fr-FR' : 'en-GB';
   let post;
@@ -94,15 +108,25 @@ export default async function BlogPost(
     }
   }
 
+  contentHtml = applyCallouts(contentHtml, {
+    note: tTools('callout.note'), tip: tTools('callout.tip'), warning: tTools('callout.warning'), important: tTools('callout.important'),
+  });
+  const articleUrl = `${SITE_URL}/${locale}/blog/${slug}`;
+  const allPosts = getLocalizedPosts(locale);
+  const related = relatedPosts({ slug, tags: post.tags }, allPosts);
+  const categories = categoriesOf(post.tags);
+
   function formatDate(iso: string) {
     return new Date(iso).toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric' });
   }
 
   return (
     <>
-      <div className={styles.backLink}>
-        <Link href={`/${locale}/blog`}>{t('back')}</Link>
-      </div>
+      <nav className={styles.backLink} aria-label={tTools('breadcrumb')}>
+        <Link href={`/${locale}`}>{tNav('home')}</Link> <span aria-hidden="true">/</span>{' '}
+        <Link href={`/${locale}/blog`}>{tNav('blog')}</Link>
+      </nav>
+      <HistoryTracker slug={slug} />
 
       <div className={toc.length > 0 ? styles.articleWrapper : undefined}>
         <article>
@@ -114,6 +138,12 @@ export default async function BlogPost(
             </div>
             <h1 className={styles.title}>{displayTitle}</h1>
             <p className={styles.excerpt}>{displayExcerpt}</p>
+            <div className={edit.articleActions}><SaveButton slug={slug} /></div>
+            <div className={edit.articleCover}><Cover category={categories[0]} label={tCat(`${categories[0]}.name`)} /></div>
+            <details className={edit.mobileToc}>
+              <summary>{tToc('title')}</summary>
+              <TableOfContents toc={toc} title={tToc('title')} label={tToc('label')} />
+            </details>
             <div className={styles.tagList}>
               {post.tags.map(tag => (
                 <span key={tag} className={styles.tag} data-color={tagColor(tag)}>{tag}</span>
@@ -126,6 +156,31 @@ export default async function BlogPost(
             className={styles.content}
             dangerouslySetInnerHTML={{ __html: contentHtml }}
           />
+
+          <div className={edit.shareRow}><ShareBar url={articleUrl} title={displayTitle} /></div>
+          <AuthorBox locale={locale} />
+
+          {related.length > 0 && (
+            <aside className={edit.related} aria-labelledby="related-title">
+              <h2 id="related-title" className={edit.relatedTitle}>{tHome('related')}</h2>
+              <ul className={edit.relatedList}>
+                {related.map(r => (
+                  <li key={r.slug}>
+                    <Link href={`/${locale}/blog/${r.slug}`} className={edit.relatedLink}>
+                      <span className={edit.relatedName}>{r.title}</span>
+                      <span className={edit.relatedMeta}>{r.date.slice(0, 10)} · {r.readTime} {t('readTime')}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
+
+          <aside className={edit.inlineNl}>
+            <h2 className={edit.relatedTitle}>{tNl('title')}</h2>
+            <p>{tNl('text')}</p>
+            <NewsletterForm locale={locale} source="article" />
+          </aside>
         </article>
 
         {toc.length > 0 && (
@@ -135,7 +190,18 @@ export default async function BlogPost(
         )}
       </div>
 
+      <FollowPrompt />
+      <BackToTop />
       <CopyCode contentId="post-content" copyLabel={tCode('copy')} copiedLabel={tCode('copied')} ariaLabel={tCode('copyAria')} />
+      <JsonLd data={{
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: tNav('home'), item: `${SITE_URL}/${locale}` },
+          { '@type': 'ListItem', position: 2, name: tNav('blog'), item: `${SITE_URL}/${locale}/blog` },
+          { '@type': 'ListItem', position: 3, name: displayTitle, item: articleUrl },
+        ],
+      }} />
       <JsonLd data={{
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',

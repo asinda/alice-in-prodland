@@ -3,6 +3,7 @@ title: "Mon kubectl cheatsheet de production (mis à jour 2025)"
 date: "2025-02-08"
 excerpt: "Les commandes kubectl que j'utilise vraiment en prod, classées par situation d'urgence. Pas de théorie, juste ce qui marche."
 tags: ["kubernetes", "kubectl", "cheatsheet", "devops"]
+level: "debutant"
 ---
 
 Ce n'est pas un énième tutoriel kubectl. Ce sont les commandes que j'ai dans mes snippets parce qu'elles m'ont sauvé la mise en production.

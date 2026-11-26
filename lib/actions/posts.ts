@@ -12,6 +12,13 @@ import { getFsPostRaw } from '../posts';
 import { generateAndDistribute } from '../agents/distribute';
 import { translatePost } from '../agents/translate';
 
+const LEVELS = ['debutant', 'intermediaire', 'avance'] as const;
+type Level = (typeof LEVELS)[number];
+/** Niveau saisi dans le formulaire : une valeur inconnue ou vide revient à « non renseigné ». */
+function levelOf(v: FormDataEntryValue | null): Level | undefined {
+  return (LEVELS as readonly string[]).includes(String(v)) ? (v as Level) : undefined;
+}
+
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -27,7 +34,7 @@ export async function actionCreatePost(_: unknown, formData: FormData) {
 
   if (!title) return { error: 'Le titre est requis.' };
 
-  const post = createPost({ slug: slugify(title), title, excerpt, content, type, tags, status: 'draft', publishedAt: null });
+  const post = createPost({ slug: slugify(title), title, excerpt, content, type, tags, level: levelOf(formData.get('level')), status: 'draft', publishedAt: null });
 
   revalidatePath('/admin/posts');
   redirect(`/admin/posts/${post.id}`);
@@ -44,7 +51,7 @@ export async function actionUpdatePost(_: unknown, formData: FormData) {
   const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
 
   if (!title) return { error: 'Le titre est requis.' };
-  updatePost(id, { title, excerpt, content, type, tags });
+  updatePost(id, { title, excerpt, content, type, tags, level: levelOf(formData.get('level')) });
   revalidatePath('/admin/posts');
   revalidatePath(`/admin/posts/${id}`);
   return { success: true };

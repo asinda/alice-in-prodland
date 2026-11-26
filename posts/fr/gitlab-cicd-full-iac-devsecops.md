@@ -3,6 +3,7 @@ title: "GitLab CI/CD Full IaC : Terraform + Ansible + DevSecOps intégré   arch
 date: "2026-03-20"
 excerpt: "Comment on a construit un pipeline GitLab qui déploie de l'infra Terraform, configure les serveurs avec Ansible, scanne les images avec Trivy, et génère une SBOM/SLSA   sans sacrifier la vitesse des devs."
 tags: ["CI_CD", "gitlab", "terraform", "ansible", "devops", "kubernetes"]
+level: "avance"
 ---
 
 Le sujet revient constamment dans les discussions DevOps : "on veut faire de l'IaC, mais les pipelines sont trop lents" ou "on a ajouté les scans de sécurité et maintenant personne ne pousse plus rien". Voici comment on a résolu les deux en production.

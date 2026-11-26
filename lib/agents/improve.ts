@@ -45,7 +45,7 @@ export async function improvePost(post: {
         required: ['improvedTitle', 'improvedExcerpt', 'suggestions', 'addedTags'],
       },
     },
-    prompt: `Tu es un expert SEO pour un blog SRE/DevOps francophone (alice-in-prodland). Améliore ce contenu.
+    prompt: `Tu es un expert SEO pour un blog SRE/DevOps francophone (Jambo). Améliore ce contenu.
 
 ${untrusted('article', `Titre: ${post.title}
 Excerpt: ${post.excerpt}

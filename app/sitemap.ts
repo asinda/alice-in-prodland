@@ -17,7 +17,7 @@ function entry(path: string, lastModified?: string): MetadataRoute.Sitemap {
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const out: MetadataRoute.Sitemap = [];
-  for (const p of ['', '/blog', '/cours', '/about']) out.push(...entry(p));
+  for (const p of ['', '/blog', '/cours', '/about', '/glossaire']) out.push(...entry(p));
   for (const post of getAllPosts()) out.push(...entry(`/blog/${post.slug}`, post.date));
   for (const c of getCourses({ status: 'published' })) {
     out.push(...entry(`/cours/${c.slug}`, c.updatedAt));

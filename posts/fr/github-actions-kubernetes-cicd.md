@@ -3,6 +3,7 @@ title: "CI/CD vers Kubernetes avec GitHub Actions : le pipeline que j'aurais vou
 date: "2025-03-20"
 excerpt: "Comment construire un pipeline de déploiement Kubernetes robuste avec GitHub Actions : build, scan, déploiement progressif, et rollback automatique. Zéro compromis sur la sécurité."
 tags: ["CI/CD", "kubernetes", "github-actions", "devops"]
+level: "intermediaire"
 ---
 
 Après avoir vu une douzaine de pipelines "fonctionnels mais fragiles" en entreprise, j'ai décidé d'écrire la version que j'aurais voulu avoir dès le départ.

@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
 import { getLocale } from 'next-intl/server';
 import { SITE_URL } from '../lib/site';
-import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/instrument-sans';
+import '@fontsource/dm-mono/400.css';
+import '@fontsource/dm-mono/500.css';
 import '../styles/globals.css';
 import 'highlight.js/styles/github-dark.css';
 
@@ -19,7 +21,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   return (
-    <html lang={locale} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   );

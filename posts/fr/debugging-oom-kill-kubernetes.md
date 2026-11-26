@@ -3,6 +3,7 @@ title: "Chasser un OOMKill à 2h du matin : méthodologie et kubectl one-liners"
 date: "2025-01-15"
 excerpt: "Un pod qui redémarre toutes les 5 minutes. Des logs vides. Un pager qui hurle. Voici comment j'ai traqué et corrigé un OOMKill en production sans perdre la tête."
 tags: ["kubernetes", "debugging", "SRE", "OOM"]
+level: "intermediaire"
 ---
 
 Il est 2h17. Mon téléphone vibre. Alerte PagerDuty : `CrashLoopBackOff` sur le service de paiement. Le genre d'alerte qui réveille tout le monde sauf le monstre qui l'a causé.

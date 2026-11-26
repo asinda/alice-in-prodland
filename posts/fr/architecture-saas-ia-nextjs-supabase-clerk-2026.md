@@ -3,6 +3,7 @@ title: "Architecture d'un SaaS IA en 2026 : Next.js + Supabase + Clerk + OpenAI 
 date: "2026-05-07"
 excerpt: "J'ai conçu deux SaaS IA cette année   LegalPulse (conformité légale automatisée) et JobTaillor (adaptation de CV par IA). Voici l'architecture que j'aurais voulu trouver avant de commencer : les vraies décisions, les vraies limites, les vrais coûts."
 tags: ["SaaS", "architecture", "nextjs", "supabase", "devops", "AI"]
+level: "avance"
 ---
 
 On voit beaucoup de "stack for SaaS" qui ressemblent à des listes de logos. Ce que je vais partager ici, c'est l'architecture que j'ai réellement utilisée sur deux projets   avec les décisions non-évidentes, les limites réelles, et ce que je ferais différemment.

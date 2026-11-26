@@ -1,0 +1,11 @@
+.dialog { width: min(26rem, calc(100vw - 2rem)); padding: 0; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: var(--r); box-shadow: 0 24px 80px rgba(10, 15, 30, 0.35); margin: auto; }
+.dialog::backdrop { background: rgba(8, 12, 24, 0.55); }
+.inner { padding: 1.5rem; }
+.title { font-size: 1.15rem; margin: 0 0 1rem; color: var(--text-heading); }
+.list { margin: 0 0 1.25rem; display: grid; gap: 0.1rem; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.row dt { display: flex; gap: 0.3rem; }
+.row dd { margin: 0; font-size: 0.92rem; }
+.row kbd { font-family: var(--font-mono); font-size: 0.78rem; min-width: 1.6rem; text-align: center; padding: 0.15rem 0.45rem; border: 1px solid var(--border); border-bottom-width: 2px; border-radius: var(--r); background: var(--bg-card); color: var(--text-heading); }
+.close { min-height: 40px; padding: 0 1rem; font: inherit; font-weight: 600; color: var(--text-heading); background: transparent; border: 1px solid var(--border); border-radius: var(--r); cursor: pointer; }
+.close:hover { border-color: var(--text-heading); }

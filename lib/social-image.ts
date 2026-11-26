@@ -27,7 +27,7 @@ export async function generateSocialImage(post: {
             type: 'div',
             props: {
               style: { color: '#94a3b8', fontSize: '22px', fontFamily: 'monospace' },
-              children: '$ alice-in-prodland',
+              children: 'Jambo',
             },
           },
           {

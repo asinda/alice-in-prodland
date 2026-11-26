@@ -6,51 +6,131 @@
     "blog": "blog",
     "courses": "courses",
     "about": "about",
-    "github": "github"
+    "github": "github",
+    "categories": "topics",
+    "contact": "contact",
+    "home": "home",
+    "library": "library",
+    "allTopics": "All topics",
+    "glossary": "glossary"
   },
   "home": {
     "whoami": "alice — SRE / DevOps architect",
     "mission1": "Surviving production, learning from every incident,",
     "mission2": "and documenting the rabbit holes so you don't have to.",
     "topics": "kubernetes/  SRE/  CI-CD/  postmortems/  certifications/",
-    "featured": "Latest post",
-    "recent": "Recent posts",
+    "featured": "Featured",
+    "recent": "Latest publications",
     "readMore": "Read article →",
-    "viewAll": "View all posts →",
+    "viewAll": "See all publications →",
     "readTime": "min read",
-    "h1": "alice-in-prodland: SRE / DevOps blog"
+    "h1": "Jambo: the SRE/DevOps blog and courses",
+    "heroTitle": "Production,<br></br>seen <b>in cross-section.</b>",
+    "heroLead": "The blog and courses of an SRE engineer: Kubernetes, CI/CD, observability, post-mortems. Diagrams, commands, real outages.",
+    "ctaPosts": "Explore the publications",
+    "ctaAbout": "Who writes here",
+    "pickTitle": "Article feed",
+    "all": "All",
+    "count": "{n, plural, =0 {No posts} one {# post} other {# posts}}",
+    "empty": "Nothing matches. Try another word or clear the filter.",
+    "latest": "Latest post",
+    "search": "Search the posts",
+    "startTitle": "Where to start?",
+    "startLead": "Pick an entry point and I'll filter the posts for you.",
+    "pathK8sTitle": "I'm new to Kubernetes",
+    "pathK8sText": "The commands and the traps, without needless jargon.",
+    "pathSreTitle": "I want to understand prod",
+    "pathSreText": "Incidents, post-mortems and monitoring, told for real.",
+    "pathDevopsTitle": "I want to automate everything",
+    "pathDevopsText": "CI/CD, infrastructure as code: the tools that save you time.",
+    "mapTitle": "The blog map",
+    "lineK8s": "Kubernetes",
+    "lineSre": "SRE and incidents",
+    "lineAuto": "Automation and AI",
+    "lineData": "Platforms and data",
+    "legend": "Lines",
+    "hub": "Interchange: the post is on several lines",
+    "beginTitle": "New here?",
+    "beginText": "Take the Kubernetes line, first stop:",
+    "ctaContact": "An AI project? Let’s talk",
+    "topicsTitle": "Sectors",
+    "topicsLead": "Nine ways into the subject. Pick the one that fits you.",
+    "categoryEmpty": "No posts in this topic yet. More are coming: subscribe so you don’t miss them.",
+    "related": "Read next",
+    "bandTitle": "Need help with an AI project?",
+    "bandText": "I advise teams on choosing use cases, integrating and running AI in production, with a clear framework for security and cost. First 30-minute call, no commitment.",
+    "bandCta": "Talk about your project",
+    "nlTitle": "Get new publications",
+    "ctaTopics": "Discover the areas of expertise",
+    "diagramAria": "Diagram: a request goes through document retrieval, the language model and tools before the answer. Everything is supervised by traces, costs and guardrails.",
+    "dgRequest": "Request",
+    "dgRetrieve": "Retrieval (RAG)",
+    "dgModel": "Model",
+    "dgTools": "Tools and APIs",
+    "dgAnswer": "Answer",
+    "dgGuard": "Traces · costs · guardrails · evals",
+    "viewAllShort": "See all publications",
+    "loadMore": "Show {n, plural, one {# more post} other {# more posts}}",
+    "searchHero": "Search {n} articles…",
+    "bootIndexed": "{n, plural, one {# post indexed} other {# posts indexed}}",
+    "bootLatest": "latest post: {date}",
+    "bootSearch": "search ready · press /",
+    "techLabel": "On the menu",
+    "teleArticles": "Posts",
+    "teleCourses": "Courses",
+    "teleLessons": "Lessons",
+    "teleLatest": "Latest post",
+    "journalTitle": "Latest publications",
+    "modulesTitle": "Training modules",
+    "modulesCount": "{n, plural, one {# active} other {# active}}",
+    "modulesAll": "See all courses →",
+    "followText": "One in-depth article a week, straight to your inbox. Unsubscribe in one click.",
+    "planLabel": "Featured",
+    "routeTitle": "Suggested path",
+    "routeLead": "Four courses, in this order: the basics, the system, then the interview."
   },
   "blog": {
-    "title": "blog",
-    "subtitle": "posts · Kubernetes, SRE, CI/CD, post-mortems",
+    "title": "Publications",
+    "subtitle": "Analyses and guides on AI, architecture, automation, Kubernetes and reliability.",
     "back": "← Back to blog",
     "backAll": "← All posts",
     "readTime": "min read"
   },
   "courses": {
-    "title": "courses",
+    "title": "Courses",
     "subtitle": "Technical training in DevOps / SRE / Platform Engineering",
     "back": "← All courses",
     "lessons": "lesson",
     "lessonsPlural": "lessons",
-    "start": "Start first lesson →",
+    "start": "Initialise the module →",
     "lessonOf": "Lesson",
     "of": "/",
-    "end": "✓ End of course"
+    "end": "✓ End of course",
+    "lessonCount": "{n, plural, one {# lesson} other {# lessons}}",
+    "empty": "No published course yet."
   },
   "footer": {
     "built": "Built with",
     "heart": "♥",
     "and": "and too many",
-    "sessions": "kubectl debug sessions",
+    "sessions": "sessions",
     "legal": "Legal notice",
-    "privacy": "Privacy"
+    "privacy": "Privacy",
+    "tagline": "A technical blog to understand AI, architecture and running systems in production, without needless jargon.",
+    "explore": "Explore",
+    "follow": "Follow",
+    "newsletter": "Newsletter",
+    "about": "The site"
   },
   "a11y": {
     "skip": "Skip to content",
     "langLabel": "Switch language",
     "mainNav": "Main navigation",
-    "newTab": "(opens in a new tab)"
+    "newTab": "(opens in a new tab)",
+    "theme": "Switch between light and dark theme",
+    "search": "Search the site",
+    "menu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "toc": {
     "title": "Table of contents",
@@ -60,5 +140,215 @@
     "copy": "Copy",
     "copied": "✓ Copied",
     "copyAria": "Copy code"
+  },
+  "search": {
+    "open": "Search",
+    "placeholder": "Search a post, a tool, an error…",
+    "empty": "No results. Try another word.",
+    "latest": "Latest posts",
+    "results": "Results",
+    "close": "Close",
+    "keys": "↑ ↓ to move, Enter to open, Esc to close"
+  },
+  "kind": {
+    "incident": "INCIDENT",
+    "guide": "GUIDE",
+    "analyse": "ANALYSIS"
+  },
+  "status": {
+    "line": "Online · {n, plural, one {# post} other {# posts}} · latest: {date}",
+    "nominal": "All systems nominal"
+  },
+  "term": {
+    "label": "Interactive terminal: type a command or click a suggestion",
+    "input": "Command",
+    "placeholder": "type help…",
+    "try": "Try",
+    "whoami": "alice, SRE / DevOps architect. I document what breaks in production.",
+    "help": "Available commands:",
+    "helpHelp": "help          this help",
+    "helpLs": "ls            list the posts",
+    "helpOpen": "open <n>      open post number n",
+    "helpGrep": "grep <word>   search for a word",
+    "helpTags": "tags          show the topics",
+    "helpWhoami": "whoami        who writes here",
+    "helpTheme": "theme <mode>  dark or light",
+    "helpClear": "clear         clear the screen",
+    "unknown": "command not found: {cmd}. Type help.",
+    "noMatch": "no results for \"{q}\".",
+    "openUsage": "usage: open <number>. Type ls to see the numbers.",
+    "openNotFound": "post not found: {n}.",
+    "opening": "opening {title}…",
+    "themeSet": "theme: {mode}",
+    "themeUsage": "usage: theme dark | theme light",
+    "grepUsage": "usage: grep <word>"
+  },
+  "categories": {
+    "ia-llm": {
+      "name": "AI and LLMs",
+      "desc": "Understand the models, their limits and what they change for business."
+    },
+    "agents": {
+      "name": "AI agents",
+      "desc": "Agents, tools and protocols: what really works beyond the demos."
+    },
+    "architecture": {
+      "name": "Architecture and integration",
+      "desc": "Architecture decisions and integrating AI into existing systems."
+    },
+    "api": {
+      "name": "APIs and development",
+      "desc": "Calling, exposing and hardening APIs: SDKs, webhooks, typing."
+    },
+    "automatisation": {
+      "name": "Automation",
+      "desc": "n8n, Make, pipelines and infrastructure as code: automate without adding fragility."
+    },
+    "rag": {
+      "name": "RAG and data",
+      "desc": "Search, embeddings and vector databases for answers grounded in your data."
+    },
+    "tutoriels": {
+      "name": "Tutorials and guides",
+      "desc": "Step-by-step walkthroughs and cheat sheets you can use right away."
+    },
+    "transformation": {
+      "name": "AI transformation in business",
+      "desc": "Strategy, governance, compliance and return on investment."
+    },
+    "ops": {
+      "name": "Reliability and operations",
+      "desc": "Kubernetes, SRE, observability and post-mortems: keeping systems up."
+    }
+  },
+  "newsletter": {
+    "title": "One analysis a week",
+    "text": "One in-depth article on AI in business, by email. No jargon, no spam.",
+    "label": "Email address",
+    "placeholder": "you@company.com",
+    "button": "Subscribe",
+    "consent": "I agree to receive the newsletter. I can unsubscribe at any time.",
+    "done": "Thanks, you’re subscribed.",
+    "error": {
+      "invalid": "That email address doesn’t look valid.",
+      "consent": "Tick the box to confirm your consent.",
+      "rate": "Too many attempts. Try again in a few minutes.",
+      "fail": "Subscription failed. Try again later."
+    }
+  },
+  "contact": {
+    "title": "Let’s talk about your AI project",
+    "lead": "Tell me where you stand: the use case, the constraints, the timeline. I reply within two business days.",
+    "name": "Name",
+    "email": "Work email",
+    "company": "Company (optional)",
+    "need": "What you need",
+    "needs": {
+      "audit": "AI audit and strategy",
+      "integration": "Integration and automation",
+      "support": "Support and training",
+      "other": "Other or not defined yet"
+    },
+    "message": "Your message",
+    "consent": "I agree that this information may be used to reply to me. It is not shared.",
+    "send": "Send",
+    "done": "Message sent. I will reply within two business days.",
+    "error": {
+      "invalid": "Check your name, your email and a message of at least 10 characters.",
+      "consent": "Tick the box to confirm your consent.",
+      "rate": "Too many recent submissions. Try again later.",
+      "fail": "Sending failed. Try again later."
+    },
+    "sideTitle": "What happens next",
+    "side1": "I read your message and reply by email.",
+    "side2": "If it makes sense, we book a 30-minute call, no commitment.",
+    "side3": "I tell you honestly whether and how I can help, or who to turn to otherwise."
+  },
+  "level": {
+    "label": "Technical level",
+    "debutant": "Beginner",
+    "intermediaire": "Intermediate",
+    "avance": "Advanced"
+  },
+  "tools": {
+    "save": "Read later",
+    "saved": "Saved",
+    "share": "Share",
+    "newTab": "(new tab)",
+    "email": "Email",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied",
+    "top": "Back to top",
+    "breadcrumb": "Breadcrumb",
+    "callout": {
+      "note": "Note",
+      "tip": "Tip",
+      "warning": "Warning",
+      "important": "Important"
+    }
+  },
+  "library": {
+    "title": "My library",
+    "lead": "Your read-later list, your history and suggestions based on what you have read.",
+    "saved": "Read later",
+    "savedEmpty": "Nothing saved yet. Use “Read later” on a post.",
+    "history": "History",
+    "historyEmpty": "No posts viewed yet.",
+    "clear": "Clear history",
+    "forYou": "For you",
+    "privacy": "These lists stay in your browser: they are not sent to our servers and disappear if you clear site data."
+  },
+  "glossary": {
+    "title": "Glossary",
+    "lead": "The terms of business AI, defined simply.",
+    "index": "Jump to a term"
+  },
+  "follow": {
+    "button": "Follow",
+    "title": "Get the next article",
+    "text": "One in-depth article a week on AI in production, straight to your inbox.",
+    "p1": "Real outages and what they teach",
+    "p2": "Guides you can apply the same day",
+    "p3": "Unsubscribe in one click, no sales pitches",
+    "or": "Prefer a feed reader?",
+    "rss": "Subscribe via RSS",
+    "close": "Close",
+    "prompt": "Did this article help? Get the next one by email.",
+    "dismiss": "Hide"
+  },
+  "about": {
+    "role": "DevOps / SRE engineer, cloud platforms",
+    "meta": "Toulouse, France · 10+ years in production",
+    "ctaContact": "Get in touch",
+    "ctaBlog": "Read the publications",
+    "stack": "Skills",
+    "path": "Career",
+    "contact": "Contact",
+    "newTab": "new tab",
+    "ctaCourses": "See the courses",
+    "nameStory": "Jambo means “hello” in Swahili. I wanted a blog where you feel welcome, even when the subject is as technical as production."
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "search": "Search",
+    "theme": "Toggle theme",
+    "goHome": "Go to home",
+    "goBlog": "Go to publications",
+    "goTopics": "Go to topics",
+    "goLibrary": "Go to library",
+    "goGlossary": "Go to glossary",
+    "help": "Show this help",
+    "close": "Close"
+  },
+  "author": {
+    "role": "DevOps / SRE engineer, cloud platforms",
+    "bio": "I document what breaks in production, how we fix it and what it changes for AI, APIs and automation.",
+    "about": "About",
+    "newTab": "new tab"
+  },
+  "route": {
+    "label": "Courses on the path",
+    "lessons": "{n, plural, one {# lesson} other {# lessons}}",
+    "start": "Start the course →"
   }
 }

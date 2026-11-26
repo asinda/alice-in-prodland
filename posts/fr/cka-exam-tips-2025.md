@@ -3,6 +3,7 @@ title: "CKA 2025 : ce que j'aurais voulu savoir avant de passer l'examen"
 date: "2025-04-10"
 excerpt: "J'ai passé la CKA en mars 2025 avec un score de 91%. Voici mes vraies notes de préparation : les pièges, les tricks de vitesse, et les domaines où les gens perdent du temps."
 tags: ["kubernetes", "CKA", "certification", "career"]
+level: "intermediaire"
 ---
 
 Score final : **91%**. Temps restant : 8 minutes sur 120. Voici ce que j'aurais voulu savoir.

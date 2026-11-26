@@ -1,4 +1,4 @@
-# Alice in Prodland
+# Jambo
 
 Blog SRE / DevOps bilingue (FR/EN) avec CMS d'administration, cours en ligne et publication automatisée sur les réseaux sociaux.
 

@@ -43,6 +43,8 @@ export interface DbPost {
   excerptEn?: string;
   contentEn?: string;
   tags: string[];
+  /** Niveau technique, facultatif (affiché en filtre sur le blog). */
+  level?: 'debutant' | 'intermediaire' | 'avance';
   type: ContentType;
   status: Status;
   publishedAt: string | null;
