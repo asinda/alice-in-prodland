@@ -17,7 +17,7 @@ function slugify(s: string) {
 }
 
 async function pushIntegrations(course: NonNullable<ReturnType<typeof getCourseById>>) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const payload = {
     title: course.title,
     excerpt: course.description,

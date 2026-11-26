@@ -8,7 +8,7 @@ import { previewCookieValue, safeEqual } from './lib/preview';
 
 const intlMiddleware = createMiddleware(routing);
 
-const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://alice-in-prodland.onrender.com').replace(/\/$/, '');
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || 'https://alice-in-prodland.onrender.com').replace(/\/$/, '');
 
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
